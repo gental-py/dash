@@ -1,5 +1,6 @@
 print("  [Info] Import packeges : ", end="")
 import os, platform, sys, subprocess, getpass, datetime, socket, requests, getmac, pyperclip, configparser as cp
+from typing import Counter
 print("OK")
 
 # System username
@@ -23,7 +24,7 @@ ConfigCP.read(Config_Loc)
 RegistryCp.read(Registry_Loc)
 print("OK")
 
-print("  [Info] Checking files : [", end="")
+print("  [Info] Checking files  [", end="")
 if not os.path.exists(MainFolder_Loc):
     os.mkdir(MainFolder_Loc)
     print("main,",end="")
@@ -96,7 +97,7 @@ def ReadUserVariables():
     VarsCP.read(Vars_Loc)
 
 def TurnColors():
-    global end, red, gray, green
+    global end, red, gray, green, orange
 
     RegistryCp.read(Registry_Loc)
     if RegistryCp["reg"]["enableColors"] == "false":
@@ -104,6 +105,8 @@ def TurnColors():
         red = ""
         gray = ""
         green = ""
+        orange = ""
+
 
 # Format input
 def FormatInput(UserInput):
@@ -114,6 +117,18 @@ def FormatInput(UserInput):
  
     UserInputList = UserInput.split(FormatInput_sep)
     UserInputList[0] = UserInputList[0].replace(" ", "").lower()
+
+    VarsCP.read(Vars_Loc)
+    ListOfVariables = VarsCP.sections()
+
+    for i, argument in enumerate(UserInputList):
+        argument = argument.replace(" ","").lower()
+        argBef = argument
+        for variable in ListOfVariables:
+            argument = argument.replace("${"+variable+"}", VarsCP[variable]["value"])
+            if argBef != argument:
+                UserInputList.pop(i)
+                UserInputList.insert(i, argument)
 
     return UserInputList
 
@@ -142,10 +157,11 @@ while True:
     CommandsCp.read(Commands_Loc)
     UserConfig_Read = ReadUserConfig()
     
-    end   = "\033[0m"
-    red   = "\033[1;31m"
-    gray  = "\033[1;30m"
-    green = "\033[1;32m"
+    end    = "\033[0m"
+    red    = "\033[1;31m"
+    gray   = "\033[1;30m"
+    green  = "\033[1;32m"
+    orange = "\033[1;33m"
     TurnColors()
 
     class UserConfig:
@@ -173,18 +189,34 @@ while True:
 
     elif __Command__[0] == "restart":
         os.system("py dash.py")
+        Cls()
         exit()
 
     elif __Command__[0] == "cls":
         Cls()
 
-    elif __Command__[0] == "testarg":
+    elif __Command__[0] == "argtest":
         for i, arg in enumerate(__Command__):
             print(f"  [{i}] = \"{arg}\"")
         print("\n")
 
+    elif __Command__[0] == "maketerminalschort":
+        if not os.path.exists(f"C:\\Windows\\System32\\dash.exe"):
+            pass
+
+    elif __Command__[0] == "devtest":
+
+        UserInputList = __Command__
+        VarsCP.read(Vars_Loc)
+        ListOfVariables = VarsCP.sections()
+
+        for argument in UserInputList:
+            argument = argument.replace(" ","").lower()
+            for variable in ListOfVariables:
+                argument = argument.replace("${"+variable+"}", VarsCP[variable]["value"])
+
     # Settings
-    elif __Command__[0] == "mycfg":
+    elif __Command__[0] == "showconfig":
         print(f"  Name      ==  \"{UserConfig.Name}\"")
         print(f"  Cursor    ==  \"{UserConfig.Cursor}\"")
         print(f"  Sepchar   ==  \"{UserConfig.Sepchar}\"\n")
@@ -313,6 +345,26 @@ while True:
             print(f"  {red}Cannot find addres for: {end}{revdnslkp_Addres}\n")
         print("")
 
+    elif __Command__[0] == "ipgeoinfo":
+            try:
+                ipinfo_IP = __Command__[1]
+                ipinfo_IP = ipinfo_IP.replace(" ","")
+            except:
+                print(f"  {red}Missing argument: <_ip_>{end}\n")
+                continue
+
+            try:
+                ipinfo_REQ = requests.get(f"http://ip-api.com/json/{ipinfo_IP}")
+                ipinfo_JSON = ipinfo_REQ.json()
+
+                if ipinfo_IP.replace(" ","") == "": ipinfo_IP = "Localhost"
+
+                print(f"  Country:  {ipinfo_JSON['country']}     [{ipinfo_JSON['countryCode']}]")
+                print(f"  City   :  {ipinfo_JSON['city']}      [{ipinfo_JSON['zip']}]\n")
+
+            except:
+                print(f"  {red}Error: Cannot load information about ip:{end} {ipinfo_IP}\n")
+    
     # Mode
     elif __Command__[0] == "mode.root":
         _Mode_ = "root"
@@ -424,13 +476,29 @@ while True:
             with open(Registry_Loc, "w") as f:
                 RegistryCp.write(f)
 
+    elif __Command__[0] == "regreset":
+        if _Mode_ != "root":
+            print(f"  {red}This command can be run only as root.{end}")
+            continue
+        
+        print(f"  {orange}Warning: Registry will be setted back to deafult. Do you really want to continue?{end}")
+        regreset_Confirmation = input('  "confirm" to continue:  ')
+
+        if regreset_Confirmation.lower().replace(" ", "") == "confirm":
+            open(Registry_Loc, "w+").close()
+            Cls()
+            os.system("py dash.py")
+            exit()
+
+        print("\n")
+
     # Custom commands
     elif __Command__[0] in _CustomCommandsList_:
         RegistryCp.read(Registry_Loc)
         if RegistryCp["reg"]["enablecustomcommands"] == "false":
-            print(f"  {red}Custom commands are disabled in registry.{end}")
+            print(f"  {red}Custom commands are disabled in registry.{end}\n")
             continue
-        
+
         CommandsCp.read(Commands_Loc)
         try:
             exec(CommandsCp[__Command__[0]]["value"].replace("<br>", "\n"))
@@ -441,7 +509,7 @@ while True:
     elif __Command__[0] == "addcustomcmd":
         RegistryCp.read(Registry_Loc)
         if RegistryCp["reg"]["enablecustomcommands"] == "false":
-            print(f"  {red}Custom commands are disabled in registry.{end}")
+            print(f"  {red}Custom commands are disabled in registry.{end}\n")
             continue
 
         try:
@@ -461,7 +529,7 @@ while True:
     elif __Command__[0] == "opencustomcmd":
         RegistryCp.read(Registry_Loc)
         if RegistryCp["reg"]["enablecustomcommands"] == "false":
-            print(f"  {red}Custom commands are disabled in registry.{end}")
+            print(f"  {red}Custom commands are disabled in registry.{end}\n")
             continue
 
         os.system(f"notepad {Commands_Loc}")
@@ -469,25 +537,65 @@ while True:
     elif __Command__[0] == "makecustom":
         RegistryCp.read(Registry_Loc)
         if RegistryCp["reg"]["enablecustomcommands"] == "false":
-            print(f"  {red}Custom commands are disabled in registry.{end}")
+            print(f"  {red}Custom commands are disabled in registry.{end}\n")
             continue
 
         try:
-            normalCode_Loc = __Command__[1].replace(" ","", 1)
-            if not os.path.exists(normalCode_Loc):
-                print(f"  {red}Path: \"{normalCode_Loc}\" does not exists!{end}\n")
-                continue 
+            makecustom_Mode = __Command__[1]
+            makecustom_Mode = makecustom_Mode.replace(" ","").lower()
 
         except:
-            print(f"  {red}Missing argument: <_code_>.{end}\n")
+            print(f"  {red}Missing argument: <_mode_>  [Place: 1].{end} Possible values: [file/f] , [text/t]\n")
+            continue
+
+        if makecustom_Mode not in ("text", "t", "file", "f"):
+            print(f"  {red}Argument error: <_mode_> [Place: 1].{end} Posible values: [file/f] , [text/t]\n")
             continue
         
-        FormattedCode = open(normalCode_Loc, "r").read().replace("\n", "<br>")
-        print(FormattedCode)
+        if makecustom_Mode in ("file", "f"):
+            try:
+                normalCode_Loc = __Command__[2].replace(" ","", 1)
+                if not os.path.exists(normalCode_Loc):
+                    print(f"  {red}Path: \"{normalCode_Loc}\" does not exists!{end}\n")
+                    continue 
 
-        if RegistryCp["reg"]["copyoutput"] == "true":
-            pyperclip.copy(FormattedCode)
-            print(f"  {gray}(copied.){end}")
+            except:
+                print(f"  {red}Missing argument: <_code_>. [Place: 2]{end}\n")
+                continue
+            
+            FormattedCode = open(normalCode_Loc, "r").read().replace("\n", "<br>")
+            print(FormattedCode)
+
+            if RegistryCp["reg"]["copyOutput"] == "true":
+                pyperclip.copy(FormattedCode)
+                print(f"  {gray}(copied.){end}\n")
+
+        else:
+            try:
+                print("\n")
+
+                MakeCode_lines = []
+                MakeCode_Counter = 1
+                while True:
+                    MakeCode_line = input(f"{MakeCode_Counter}  ")
+                    if MakeCode_line == "<stop>":
+                        break
+                    else:
+                        MakeCode_lines.append(MakeCode_line)
+
+                    MakeCode_Counter += 1
+
+                MakeCode_text = '\n'.join(MakeCode_lines)
+                ReadyText = MakeCode_text.replace('\n', '<br>')
+                print(f"\n\n  Code: {ReadyText}")
+
+                if RegistryCp["reg"]["copyOutput"] == "true":
+                    pyperclip.copy(ReadyText)
+                    print(f"  {gray}(copied.){end}\n")
+
+            except:
+                print(f"  {red}Missing argument: <_code_>. [Place: 2]{end}\n")
+                continue
 
     elif __Command__[0] == "customlist":
         print("  Custom commands:")
@@ -496,7 +604,115 @@ while True:
     
         print("\n")
 
+    # Variables
+    elif __Command__[0] == "vars":
+        VarsCP.read(Vars_Loc)
+        varslist_ListOfVariables = VarsCP.sections()
+        for name in varslist_ListOfVariables:
+            print(f"  {name} = \"{VarsCP[name]['value']}\"")
 
+        print("\n")
+        
+    elif __Command__[0] == "varadd":
+        try:
+            varadd_Name = __Command__[1]
+            varadd_Name = varadd_Name.replace(" ","").lower()
+            
+        except:
+            print(f"  {red}Missing argument: <_name_>{end}\n")
+            continue  
+
+        varadd_ListOfVariables = VarsCP.sections()
+        if varadd_Name in varadd_ListOfVariables:
+            print(f"  {red}Variable named {varadd_Name} already exists!{end}\n")
+            continue
+
+        try:
+            varadd_Value = __Command__[2]
+            varadd_Value = varadd_Value.replace(" ", "", 1)
+
+        except:
+            print(f"  {red}Missing argument: <_value_>{end}\n")
+            continue
+
+        VarsCP[varadd_Name] = {"value": varadd_Value}
+        with open(Vars_Loc, "w") as f:
+            VarsCP.write(f)
+
+    elif __Command__[0] == "vardel":
+        try:
+            vardel_Name = __Command__[1]
+            vardel_Name = vardel_Name.replace(" ","").lower()
+
+        except:
+            print(f"  {red}Missing argument: <_name_>{end}\n")
+            continue  
+
+        VarsCP.read(Vars_Loc)
+        vardel_ListOfVariables = VarsCP.sections()
+        vardel_currentVars = [] 
+        for varname in vardel_ListOfVariables:
+            vardel_currentVars.append(varname.replace(" ","").lower())
+            
+        if vardel_Name not in vardel_currentVars:
+            print(f"  {red}Variable named {vardel_Name} does not exists!{end}\n")
+            continue
+
+        try:
+            VarsCP.remove_section(vardel_Name)    
+            with open(Vars_Loc, "w") as f:
+                VarsCP.write(f)
+
+        except:
+            print(f"  {red}Cannot delete variable.{end}")
+
+    elif __Command__[0] == "varset":
+        try:
+            varset_Name = __Command__[1]
+            varset_Name = varset_Name.replace(" ","").lower()
+
+        except:
+            print(f"  {red}Missing argument: <_name_> [Place: 1]{end}\n")
+            continue  
+
+        VarsCP.read(Vars_Loc)
+        varset_ListOfVariables = VarsCP.sections()
+        varset_currentVars = [] 
+        for varname in varset_ListOfVariables:
+            varset_currentVars.append(varname.replace(" ","").lower())
+            
+        if varset_Name not in varset_currentVars:
+            print(f"  {red}Variable named {varset_Name} does not exists!{end}\n")
+            continue
+
+        try:
+            varset_NewValue = __Command__[2]
+
+        except:
+            print(f"  {red}Missing argument: <_new.value_> [Place: 2]{end}\n")
+            continue
+
+        try:
+            VarsCP[varset_Name]["value"] = varset_NewValue
+            with open(Vars_Loc, "w") as f:
+                VarsCP.write(f)
+
+        except:
+            print(f"  {red}Cannot change value.{end}")
+
+    # Other
+    elif __Command__[0] == "oscmd":
+        try:
+            oscmd_Command = __Command__[1]
+        except:
+            print(f"  {red}Missing argument: <_command_>{end}")
+            continue
+
+        try:
+            os.system(oscmd_Command)
+        except Exception as exc:
+            print(f"  {red}Unexcpeted error: {exc}{end}")
+            
     else:
         ClearOneLine()
         print(f"({_Mode_}) {UserConfig.Name} {red}{UserConfig.Cursor}{end}{SpaceAfterCursor}{CommandContent}")
