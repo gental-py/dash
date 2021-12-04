@@ -53,4 +53,4 @@ Custom commands, that you can use in terminal.
 
 ## Screenshots
 
-![App Screenshot](https://imgur.com/a/tu1JjFj)
+![App Screenshot](https://imgur.com/gallery/tu1JjFj)
