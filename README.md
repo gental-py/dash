@@ -36,7 +36,7 @@ Sepchar is character that will separate arguments. Deafult = `.`. You can test i
 
 ## How to use configuration?
 
-- `mycfg` - Show your current config
+- `showconfig` - Show your current config
 - `set.name ! <name>` - Set new name
 - `set.cursor ! <cursor>` - Set new cursor
 - `set.sepchar ! <sepchar>` - Set new sepchar. Use `_` as argument separator to replace it with space.
@@ -54,3 +54,4 @@ Custom commands, that you can use in terminal.
 ## Screenshots
 
 ![App Screenshot](https://imgur.com/JkD6WBE)
+
