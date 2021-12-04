@@ -50,3 +50,7 @@ User configuration file.
 Program configuration file.
 #### `Custom commands` - `C:\Users\USERNAME\Appdata\Local\.dash\commands.dash`
 Custom commands, that you can use in terminal.
+
+## Screenshots
+
+![App Screenshot](https://imgur.com/a/tu1JjFj)
