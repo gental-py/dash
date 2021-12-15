@@ -1,148 +1,157 @@
-print("  [Info] Import packeges : ", end="")
-import os, platform, sys, subprocess, getpass, datetime, socket, requests, getmac, pyperclip, configparser as cp
-from typing import Counter
+# Import packages
+print("  [Info] Importing packages : ", end="")
+
+try:
+    import pyuac, sys, os, platform, getpass, socket, requests, getmac, pyperclip, configparser as cp, ctypes
+
+except:
+    print("Error : ",end="")
+    from install_libaries import InstallRequiredPackages
+    InstallRequiredPackages()
+    __import__("os").system("cls")
+
+    try:
+        import pyuac, sys, os, platform, getpass, socket, requests, getmac, pyperclip, configparser as cp, ctypes
+        print("Repaired : ",end="")
+    
+    except:
+        print("Error")
+        exit()
+
 print("OK")
+
 
 # System username
 _OsUsername_ = getpass.getuser()
+
 
 # Files
 print("  [Info] Configuring configparser : ", end="")
 VarsCP = cp.ConfigParser()
 ConfigCP = cp.ConfigParser()
-RegistryCp = cp.ConfigParser()
-CommandsCp   = cp.ConfigParser()
+RegistryCP = cp.ConfigParser()
+CommandsCP   = cp.ConfigParser()
 
-Vars_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\vars.dash"
-Config_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\config.dash"
-Registry_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\reg.dash"
-MainFolder_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\"
-Commands_Loc     = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\commands.dash"
+Vars_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\vars.dash"
+Config_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\config.dash"
+Registry_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\reg.dash"
+MainFolder_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\"
+Commands_Path     = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\commands.dash"
 
-VarsCP.read(Vars_Loc)
-ConfigCP.read(Config_Loc)
-RegistryCp.read(Registry_Loc)
 print("OK")
 
-print("  [Info] Checking files  [", end="")
-if not os.path.exists(MainFolder_Loc):
-    os.mkdir(MainFolder_Loc)
-    print("main,",end="")
-if not os.path.exists(Vars_Loc):
-    open(Vars_Loc, "a+").close()
-    print("vars,",end="")
-if not os.path.exists(Commands_Loc):
-    open(Commands_Loc, "a+").close()
-    print("commands,",end="")
-if not os.path.exists(Config_Loc) or os.path.getsize(Config_Loc) == 0:
-    open(Config_Loc, "a+").close()
 
-    ConfigCP["customization"] = {"name": "dash", "cursor": "•", "sepchar": "."}
-    with open(Config_Loc, "w") as file:
-        ConfigCP.write(file)
-    print("config,",end="")
-if not os.path.exists(Registry_Loc) or os.path.getsize(Registry_Loc) == 0:
-    open(Registry_Loc, "a+").close()
-    RegistryCp["reg"] = {"checkPlatform": "true", "checkArgLenght": "true", "spaceBeetwenCursor": "true", "enableColors": "true", "copyOutput": "false", "startAsRoot": "false", "showBootupInfo": "false", "enablecustomcommands": "true"}
-    with open(Registry_Loc, "w") as file:
-        RegistryCp.write(file)
-    print("reg",end="")
-print("] : OK")
+# Check files health
+print("  [Info] Checking files <", end="")
+import check_files
+check_files.check()
+print("> : OK")
+
 
 # Check if program is running on windows.
 print("  [Info] Checking platform : ",end="")
-if RegistryCp["reg"]["checkPlatform"] == "true":
-    if platform.system() != "Windows":
-        print("  Hi user. Propably dash should run on windows. You can force that by changing \"checkplatform\" entry.")
-        exit()
+if platform.system() != "Windows":
+    print("  Hi user. Propably dash must run on Windows.")
+    exit()
 print("OK")
+
 
 # Colors
 print("  [Info] Setting up colors : ",end="")
-if not __import__("sys").stdout.isatty():
+if not sys.stdout.isatty():
     for _ in dir():
         if isinstance(_, str) and _[0] != "_":
             locals()[_] = ""
 else:
     if platform.system() == "Windows":
-        kernel32 = __import__("ctypes").windll.kernel32
+        kernel32 = ctypes.windll.kernel32
         kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
         del kernel32
 print("OK")
 
+
 # Functions
 def Cls():
-    os.system("cls || clear")
+    os.system("cls")
     print("\n")
-
 def ClearOneLine():
     print("\033[A                                                             \033[A")
-
 def ListToString(InList):
     DoneStr = ""
     for Element in InList:
         DoneStr += Element
     return DoneStr
+def isAdmin():
+    try:
+        is_admin = (os.getuid() == 0)
+    except AttributeError:
+        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+    return is_admin
 
 # Configuration
 def ReadUserConfig():
-    ConfigCP.read(Config_Loc)
+    ConfigCP.read(Config_Path, encoding='utf-8')
     _SepChar = ConfigCP["customization"]["sepchar"]
     _Cursor = ConfigCP["customization"]["cursor"]
     _Name = ConfigCP["customization"]["name"]
-
-    return (_Name, _Cursor, _SepChar)
-
-def ReadUserVariables():
-    VarsCP.read(Vars_Loc)
-
+    _OsChar = ConfigCP["customization"]["oschar"]
+    return (_Name, _Cursor, _SepChar, _OsChar)
 def TurnColors():
-    global end, red, gray, green, orange
-
-    RegistryCp.read(Registry_Loc)
-    if RegistryCp["reg"]["enableColors"] == "false":
+    global end, red, gray, green, orange, blue
+    RegistryCP.read(Registry_Path, encoding='utf-8')
+    if RegistryCP["reg"]["enableColors"] == "false":
         end = ""
         red = ""
         gray = ""
         green = ""
         orange = ""
-
+        blue = ""
 
 # Format input
 def FormatInput(UserInput):
 
-    FormatInput_sep = ReadUserConfig()[2]
-    if FormatInput_sep == "_":
-        FormatInput_sep = " "
- 
-    UserInputList = UserInput.split(FormatInput_sep)
-    UserInputList[0] = UserInputList[0].replace(" ", "").lower()
-
-    VarsCP.read(Vars_Loc)
+    VarsCP.read(Vars_Path, encoding='utf-8')
+    ConfigCP.read(Config_Path, encoding='utf-8')
+    OsChar = ConfigCP["customization"]["oschar"]
     ListOfVariables = VarsCP.sections()
 
-    for i, argument in enumerate(UserInputList):
-        argument = argument.replace(" ","").lower()
-        argBef = argument
-        for variable in ListOfVariables:
-            argument = argument.replace("${"+variable+"}", VarsCP[variable]["value"])
-            if argBef != argument:
-                UserInputList.pop(i)
-                UserInputList.insert(i, argument)
+    if not UserInput.startswith(OsChar):
+        FormatInput_sep = ReadUserConfig()[2]
+        if FormatInput_sep == "_":
+            FormatInput_sep = " "
+    
+        UserInputList = UserInput.split(FormatInput_sep)
+        UserInputList[0] = UserInputList[0].replace(" ", "").lower()
+
+
+        for i, argument in enumerate(UserInputList):
+            argument = argument.replace(" ","").lower()
+            argBef = argument
+            for variable in ListOfVariables:
+                argument = argument.replace("${"+variable+"}", VarsCP[variable]["value"])
+                if argBef != argument:
+                    UserInputList.pop(i)
+                    UserInputList.insert(i, argument)
+
+    else:
+        UserInput = UserInput.replace(OsChar, "", 1)
+        UserInputList = ["oscmd", UserInput]
+
+        for i, argument in enumerate(UserInputList):
+            argBef = argument
+            for variable in ListOfVariables:
+                argument = argument.replace("${"+variable+"}", VarsCP[variable]["value"])
+                if argBef != argument:
+                    UserInputList.pop(i)
+                    UserInputList.insert(i, argument)
+
 
     return UserInputList
 
 
-# Select mode
-print("  [Info] Setting mode : ",end="")
-_Mode_ = str
-if RegistryCp["reg"]["startAsRoot"] == "true":
-    _Mode_ = "root" 
-else:
-    _Mode_ = "nrml"
-print("OK")
-
-if RegistryCp["reg"]["showBootupInfo"] == "true":
+# showbootupinfo entry barrier
+RegistryCP.read(Registry_Path)
+if RegistryCP["reg"]["showBootupInfo"] == "true":
     os.system("pause")
 
 
@@ -150,42 +159,97 @@ if RegistryCp["reg"]["showBootupInfo"] == "true":
 Cls()
 while True:
 
+    def HandleError(type, command, name, description, solution):
+        _ErrorTrigger_ = False
+        _ErrorContent_ = []
+        _AdvancedOutputMode_ = False
+
+        # Error Code
+        error_Code = type + "." + command + "." + name
+
+        # Define error output mode
+        RegistryCP.read(Registry_Path)
+        if RegistryCP["reg"]["advancedErrorOutput"] == "true":
+            _AdvancedOutputMode_ = True
+        else:
+            _AdvancedOutputMode_ = False
+
+        # Define error type as boolean
+        if type.lower() == "soft":
+            type = False
+
+        elif type.lower() == "critical":
+            type = True
+
+        else:
+            Cls()
+            print(f"    {red}ErrorHandler: Unknown error type {type.lower()}.{end}")
+            os.system("pause")
+
+        # Error content as set
+        _ErrorContent_ = (type, error_Code, command, name, description, solution)
+
+
+        if _ErrorContent_[0] == False:
+            if _AdvancedOutputMode_ == False:
+                print(f"  {red}Error: {_ErrorContent_[4]}{end}")
+                print(f"  {orange}Solution: {_ErrorContent_[5]}{end}\n")
+
+            else:
+                print(f"  {orange}===={end}{red} ERROR {end}{orange}===={end}")
+                print(f"   {red}• {orange}Code:  {end}{red}<{_ErrorContent_[1]}>{end}")
+                print(f"   {red}• {orange}Info:  {end}{red}{_ErrorContent_[3]}{end} {orange}in{end} {red}{_ErrorContent_[2]}{end}")
+                print(f"   {red}• {orange}Sltn:  {end}{blue}{_ErrorContent_[5]}{end}\n")
+
+
+
+
+    # Set mode
+    if isAdmin() == True:
+        _Mode_ = "root" 
+    else:
+        _Mode_ = "nrml"
+
     # Read user config
-    VarsCP.read(Vars_Loc)
-    ConfigCP.read(Config_Loc)
-    RegistryCp.read(Registry_Loc)
-    CommandsCp.read(Commands_Loc)
+    VarsCP.read(Vars_Path, encoding='utf-8')
+    ConfigCP.read(Config_Path, encoding='utf-8')
+    RegistryCP.read(Registry_Path)
+    CommandsCP.read(Commands_Path, encoding='utf-8')
     UserConfig_Read = ReadUserConfig()
-    
-    end    = "\033[0m"
-    red    = "\033[1;31m"
-    gray   = "\033[1;30m"
-    green  = "\033[1;32m"
-    orange = "\033[1;33m"
-    TurnColors()
 
     class UserConfig:
         Name = UserConfig_Read[0]
         Cursor = UserConfig_Read[1]
         Sepchar = UserConfig_Read[2]
+        OsChar    = UserConfig_Read[3]
+
+    _CustomCommandsList_ = CommandsCP.sections()
+
+    # Colors
+    end    =  "\033[0m"
+    red    =  "\033[1;31m"
+    gray   =  "\033[1;30m"
+    blue   =  "\033[1;34m"
+    green  =  "\033[1;32m"
+    orange =  "\033[1;33m"
+    TurnColors()
 
     # Main input
-    if RegistryCp["reg"]["spaceBeetwenCursor"] == "true":
-        SpaceAfterCursor = " "
-    else:
-        SpaceAfterCursor = ""
-
-    __Command__ = input(f"({_Mode_}) {UserConfig.Name} {gray}{UserConfig.Cursor}{end}{SpaceAfterCursor}")
+    __Command__ = input(f"({_Mode_}) {UserConfig.Name} {gray}{UserConfig.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}")
     CommandContent = __Command__
     __Command__ = FormatInput(__Command__)
 
+    # Good command
     ClearOneLine()
-    print(f"({_Mode_}) {UserConfig.Name} {green}{UserConfig.Cursor}{end}{SpaceAfterCursor}{CommandContent}")
+    print(f"({_Mode_}) {UserConfig.Name} {green}{UserConfig.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
 
-    _CustomCommandsList_ = CommandsCp.sections()
 
     if __Command__[0]   == "exit":
         exit()
+
+    elif __Command__[0] == "checkfiles":
+        check_files.check()
+        print("  Done.")
 
     elif __Command__[0] == "restart":
         os.system("py dash.py")
@@ -200,88 +264,101 @@ while True:
             print(f"  [{i}] = \"{arg}\"")
         print("\n")
 
-    elif __Command__[0] == "maketerminalschort":
-        if not os.path.exists(f"C:\\Windows\\System32\\dash.exe"):
-            pass
-
     elif __Command__[0] == "devtest":
+        # print("  •")
+        HandleError("soft", __Command__[0], "AnError", "Data you entered is gugugaga", "To repair do megapapa")
 
-        UserInputList = __Command__
-        VarsCP.read(Vars_Loc)
-        ListOfVariables = VarsCP.sections()
-
-        for argument in UserInputList:
-            argument = argument.replace(" ","").lower()
-            for variable in ListOfVariables:
-                argument = argument.replace("${"+variable+"}", VarsCP[variable]["value"])
 
     # Settings
-    elif __Command__[0] == "showconfig":
+    elif __Command__[0] == "mycfg":
         print(f"  Name      ==  \"{UserConfig.Name}\"")
         print(f"  Cursor    ==  \"{UserConfig.Cursor}\"")
-        print(f"  Sepchar   ==  \"{UserConfig.Sepchar}\"\n")
+        print(f"  Sepchar   ==  \"{UserConfig.Sepchar}\"")
+        print(f"  Oschar    ==  \"{UserConfig.OsChar}\"\n")
 
-    elif __Command__[0] == "set.name":
+    elif __Command__[0] == "setname":
         try:
-            setname_Arg = __Command__[1]
+            setname_NewName = __Command__[1]
         except:
             print(f"  {red}Missing argument: <_name_>{end}\n")
             continue
 
-        if setname_Arg.replace(" ", "") == "":
+        if setname_NewName.replace(" ", "") == "":
             print(f"  {red}Missing argument: <_name_>{end}\n")
 
-        if RegistryCp["reg"]["checkArgLenght"] == "true":
-            if len(setname_Arg) > 31:
+        if RegistryCP["reg"]["checkArgLenght"] == "true":
+            if len(setname_NewName) > 31:
                 print(f"  {red}Argument error: <_name_> is too long. [MaxLen=30]{end}\n")
                 continue
             
-            if len(setname_Arg) == 0:
+            if len(setname_NewName) == 0:
                 print(f"  {red}Argument error: <_name_> is short. [MinLen=1]{end}\n")
                 continue
 
-        ConfigCP["customization"]["name"] = setname_Arg
-        with open(Config_Loc, "w") as f:
+        ConfigCP["customization"]["name"] = setname_NewName
+        with open(Config_Path, "w", encoding='utf-8') as f:
             ConfigCP.write(f)
 
-    elif __Command__[0] == "set.cursor":
+    elif __Command__[0] == "setcursor":
         try:
-            setcursor_Arg = __Command__[1]
+            setcursor_NewCursor = __Command__[1]
         except:
             print(f"  {red}Missing argument: <_cursor_>{end}\n")
             continue
 
-        if setcursor_Arg.replace(" ", "") == "":
+        if setcursor_NewCursor.replace(" ", "") == "":
             print(f"  {red}Missing argument: <_cursor_>{end}\n")
 
-        if RegistryCp["reg"]["checkArgLenght"] == "true":
-            if len(setcursor_Arg) > 6:
+        if RegistryCP["reg"]["checkArgLenght"] == "true":
+            if len(setcursor_NewCursor) > 6:
                 print(f"  {red}Argument error: <_cursor_> is too long. MaxLen=5{end}\n")
                 continue
 
-            if len(setcursor_Arg) == 0:
+            if len(setcursor_NewCursor) == 0:
                 print(f"  {red}Argument error: <_cursor_> is short. [MinLen=1]{end}\n")
                 continue
 
-        ConfigCP["customization"]["cursor"] = setcursor_Arg
-        with open(Config_Loc, "w") as f:
+        ConfigCP["customization"]["cursor"] = setcursor_NewCursor
+        with open(Config_Path, "w", encoding='utf-8') as f:
             ConfigCP.write(f)
 
-    elif __Command__[0] == "set.sepchar":
+    elif __Command__[0] == "setsepchar":
         try:
-            setsepchar_Arg = __Command__[1]
+            setsepchar_NewChar = __Command__[1]
         except:
             print(f"  {red}Missing argument: <_sepchar_>{end}\n")
             continue
 
-        if RegistryCp["reg"]["checkArgLenght"] == "true":
-            if len(setsepchar_Arg) > 4:
+        if RegistryCP["reg"]["checkArgLenght"] == "true":
+            if len(setsepchar_NewChar) > 4:
                 print(f"  {red}Argument error: <_sepchar_> is too long. [MaxLen=3]{end}\n")
                 continue
 
-        ConfigCP["customization"]["sepchar"] = setsepchar_Arg
-        with open(Config_Loc, "w") as f:
+            if len(setsepchar_NewChar) == 0:
+                print(f"  {red}Argument error: <_sepchar_> cannot be blank{end}")
+
+        ConfigCP["customization"]["sepchar"] = setsepchar_NewChar
+        with open(Config_Path, "w", encoding='utf-8') as f:
             ConfigCP.write(f)
+
+    elif __Command__[0] == "setoschar":
+        try:
+            setoschar_Char = __Command__[1]
+        except:
+            print(f"  {red}Missing argument: <_oschar_>{end}")
+            continue
+        
+        setoschar_Char = setoschar_Char.replace(" ", "")
+
+        if RegistryCP["reg"]["checkArgLenght"] == "true":
+            if len(setoschar_Char) > 1:
+                print(f"  {red}Argument error: <_oschar_> is too long. [MaxLen=1]{end}\n")
+                continue
+
+        ConfigCP["customization"]["oschar"] = setoschar_Char
+        with open(Config_Path, "w", encoding='utf-8') as f:
+            ConfigCP.write(f)
+        
 
     # Network
     elif __Command__[0] == "netinfo":
@@ -298,84 +375,76 @@ while True:
         except:
             print(f"  {red}Loading informations Error{end}\n")
 
-        print("")
-
     elif __Command__[0] == "dnslkp":
         try:
-            dnslkp_Addres = __Command__[1]
+            dnslkp_TargetIP = __Command__[1]
         except:
             print(f"  {red}Missing argument: <_addres_>{end}\n")
             continue
 
-        dnslkp_Addres = dnslkp_Addres.replace(" ", "")
+        dnslkp_TargetIP = dnslkp_TargetIP.replace(" ", "")
 
         try:
-            dnslkp_outputIP = socket.gethostbyname(dnslkp_Addres)
-            print(f"  IP {green}>{end} {dnslkp_outputIP}", end="")
+            dnslkp_OutputIP = socket.gethostbyname(dnslkp_TargetIP)
+            print(f"  IP {green}>{end} {dnslkp_OutputIP}", end="")
 
-            RegistryCp.read(Registry_Loc)
-            if RegistryCp["reg"]["copyOutput"] == "true":
-                pyperclip.copy(dnslkp_outputIP)
+            RegistryCP.read(Registry_Path)
+            if RegistryCP["reg"]["copyOutput"] == "true":
+                pyperclip.copy(dnslkp_OutputIP)
                 print(f"  {gray}(copied.){end}")
+
+            print("\n")
         
         except:
-            print(f"  {red}Cannot find out ip addres for: {end}{dnslkp_Addres}\n")
-
-        print("")
+            print(f"  {red}Cannot find out ip addres for: {end}{dnslkp_TargetIP}\n")
 
     elif __Command__[0] == "revdnslkp":
         try:
-            revdnslkp_Addres = __Command__[1]
+            revdnslkp_TargetIP = __Command__[1]
         except:
             print(f"  {red}Missing argument: <_addres_>{end}\n")
             continue
 
-        revdnslkp_Addres = revdnslkp_Addres.replace(" ", "")
+        revdnslkp_TargetIP = revdnslkp_TargetIP.replace(" ", "")
 
         try:
-            revdnslkp_outputIP = socket.gethostbyaddr(revdnslkp_Addres)
-            print(f"  IP {green}>{end} {revdnslkp_outputIP[0]}", end="")
+            revdnslkp_OutputIP = socket.gethostbyaddr(revdnslkp_TargetIP)
+            print(f"  IP {green}>{end} {revdnslkp_OutputIP[0]}", end="")
 
-            RegistryCp.read(Registry_Loc)
-            if RegistryCp["reg"]["copyOutput"] == "true":
-                pyperclip.copy(revdnslkp_outputIP[0])
+            RegistryCP.read(Registry_Path)
+            if RegistryCP["reg"]["copyOutput"] == "true":
+                pyperclip.copy(revdnslkp_OutputIP[0])
                 print(f"  {gray}(copied.){end}")
         
         except:
-            print(f"  {red}Cannot find addres for: {end}{revdnslkp_Addres}\n")
+            print(f"  {red}Cannot find addres for: {end}{revdnslkp_TargetIP}\n")
         print("")
 
     elif __Command__[0] == "ipgeoinfo":
-            try:
-                ipinfo_IP = __Command__[1]
-                ipinfo_IP = ipinfo_IP.replace(" ","")
-            except:
-                print(f"  {red}Missing argument: <_ip_>{end}\n")
-                continue
+        try:
+            ipgeoinfo_TargetIP = __Command__[1]
+            ipgeoinfo_TargetIP = ipgeoinfo_TargetIP.replace(" ","")
+        except:
+            print(f"  {red}Missing argument: <_ip_>{end}\n")
+            continue
 
-            try:
-                ipinfo_REQ = requests.get(f"http://ip-api.com/json/{ipinfo_IP}")
-                ipinfo_JSON = ipinfo_REQ.json()
+        try:
+            ipinfo_REQ = requests.get(f"http://ip-api.com/json/{ipgeoinfo_TargetIP}")
+            ipinfo_JSON = ipinfo_REQ.json()
 
-                if ipinfo_IP.replace(" ","") == "": ipinfo_IP = "Localhost"
+            if ipgeoinfo_TargetIP.replace(" ","") == "": ipgeoinfo_TargetIP = "Localhost"
 
-                print(f"  Country:  {ipinfo_JSON['country']}     [{ipinfo_JSON['countryCode']}]")
-                print(f"  City   :  {ipinfo_JSON['city']}      [{ipinfo_JSON['zip']}]\n")
+            print(f"  Country:  {ipinfo_JSON['country']}     [{ipinfo_JSON['countryCode']}]")
+            print(f"  City   :  {ipinfo_JSON['city']}      [{ipinfo_JSON['zip']}]\n")
 
-            except:
-                print(f"  {red}Error: Cannot load information about ip:{end} {ipinfo_IP}\n")
-    
-    # Mode
-    elif __Command__[0] == "mode.root":
-        _Mode_ = "root"
+        except:
+            print(f"  {red}Error: Cannot load information about ip:{end} {ipgeoinfo_TargetIP}\n")
 
-    elif __Command__[0] == "mode.nrml":
-        _Mode_ = "nrml"
 
     # Registry
-    elif __Command__[0] == "regshow":
-        RegistryCp.read(Registry_Loc)
-        RegistryEntries = RegistryCp.items("reg")
+    elif __Command__[0] == "dregshow":
+        RegistryCP.read(Registry_Path)
+        RegistryEntries = RegistryCP.items("reg")
 
         print("  ==== REGSHOW ====\n")
         for i, entry in enumerate(RegistryEntries):
@@ -383,132 +452,126 @@ while True:
 
         print("\n")
 
-    elif __Command__[0] == "regedit":
-        if _Mode_ != "root":
-            print(f"  {red}This command can be used only as root!{end}\n")
-            continue
+    elif __Command__[0] == "dregedit":
 
         try:
-            regedit_Name = __Command__[1]
+            dregedit_EntryName = __Command__[1]
         except:
             print(f"  {red}Missing argument: <_entry.name_> [place: 1]{end}\n")
             continue
 
         try:
-            regedit_NewValue = __Command__[2]
+            dregedit_NewValue = __Command__[2]
         except:
             print(f"  {red}Missing argument: <_new.value_> [place: 2]{end}\n")
             continue
 
-        regedit_GetList = RegistryCp.items("reg")
-        regedit_ListOfEntries = [entry[0] for entry in regedit_GetList]
+        dregedit_StableEntriesList = RegistryCP.items("reg")
+        dregedit_ListOfEntries = [entry[0] for entry in dregedit_StableEntriesList]
         
-
-        regedit_Name = regedit_Name.replace(" ", "")
-        if regedit_Name not in regedit_ListOfEntries:
+        dregedit_EntryName = dregedit_EntryName.replace(" ", "")
+        if dregedit_EntryName not in dregedit_ListOfEntries:
             print(f"  {red}Incorrect name of entry!{end}\n")
             continue
 
-        if regedit_NewValue.replace(" ", "").lower() not in ("true", "false", "1", "0", "t", "f"):
+        if dregedit_NewValue.replace(" ", "").lower() not in ("true", "false", "1", "0", "t", "f"):
             print(f"  {red}Value can be only{end} true {red}or{end} false{red}!{end}\n")
             continue
 
-        if regedit_NewValue.replace(" ", "").lower() in ("true", "t", "1"):
-            regedit_NewValue = "true"
+        if dregedit_NewValue.replace(" ", "").lower() in ("true", "t", "1"):
+            dregedit_NewValue = "true"
 
         else:
-            regedit_NewValue = "false"
+            dregedit_NewValue = "false"
 
         try:
-            RegistryCp["reg"][regedit_Name] = regedit_NewValue
-            with open(Registry_Loc, "w") as f:
-                RegistryCp.write(f)
+            RegistryCP["reg"][dregedit_EntryName] = dregedit_NewValue
+            with open(Registry_Path, "w") as f:
+                RegistryCP.write(f)
 
         except:        
             print(f"  {red}Cannot write new value.{end}\n")
 
-    elif __Command__[0] == "regcopy":
-        RegistryCp.read(Registry_Loc)
-        RegistryEntries = RegistryCp.items("reg")
+    elif __Command__[0] == "dregcopy":
+        RegistryCP.read(Registry_Path)
+        dregcopy_StableEntriesList = RegistryCP.items("reg")
 
-        ValuesList = []
-        for i, entry in enumerate(RegistryEntries):
-            ValuesList.append("1" if entry[1] == 'true' else "0")
+        dregedit_OutputList = []
+        for i, entry in enumerate(dregcopy_StableEntriesList):
+            dregedit_OutputList.append("1" if entry[1] == 'true' else "0")
 
-        print(f"  {green}Your registry code:{end} {''.join(ValuesList)}", end="")
-        if RegistryCp["reg"]["copyoutput"] == "true":
-            pyperclip.copy(''.join(ValuesList))
+        print(f"  {green}Your registry code:{end} {''.join(dregedit_OutputList)}", end="")
+        if RegistryCP["reg"]["copyoutput"] == "true":
+            pyperclip.copy(''.join(dregedit_OutputList))
             print(f"  {gray}(copied.){end}")
 
         print("\n")
 
-    elif __Command__[0] == "regpaste":
+    elif __Command__[0] == "dregpaste":
         try:
-            regpaste_Paste = __Command__[1]
-            regpaste_Paste = regpaste_Paste.replace(" ", "")
+            dregpaste_Code = __Command__[1]
+            dregpaste_Code = dregpaste_Code.replace(" ", "")
         except:
             print(f"  {red}Missing argument: <_new.reg_>{end}\n")
             continue
 
-        PastedList = list(regpaste_Paste)
-        isElementError = False
+        dregpaste_CodeList = list(dregpaste_Code)
+        dregpaste_ElementErrorTrigger = False
 
-        for element in PastedList:
+        for element in dregpaste_CodeList:
             if element != "1":
                 if element != "0":
                     print(f"  {red}Argument error: Code can handle only 1 and 0.{end}\n")
-                    isElementError = True 
-            if isElementError == True:
+                    dregpaste_ElementErrorTrigger = True 
+            if dregpaste_ElementErrorTrigger == True:
                 break
 
-        if isElementError == True:
+        if dregpaste_ElementErrorTrigger == True:
                 continue
 
-        regpaste_GetList = RegistryCp.items("reg")
-        regpaste_ListOfEntries = [entry[0] for entry in regpaste_GetList]
+        dregpaste_StableEntriesList = RegistryCP.items("reg")
+        dregpaste_ListOfEntries = [entry[0] for entry in dregpaste_StableEntriesList]
         
-        if len(regpaste_ListOfEntries) != len(PastedList):
+        if len(dregpaste_ListOfEntries) != len(dregpaste_CodeList):
             print(f"  {red}Argument error: Entried code is too long or too short.{end}\n")
             continue 
         
-        for i, element in enumerate(PastedList):
-            RegistryCp["reg"][regpaste_ListOfEntries[i]] = 'true' if element == "1" else 'false'
-            with open(Registry_Loc, "w") as f:
-                RegistryCp.write(f)
+        for i, element in enumerate(dregpaste_CodeList):
+            RegistryCP["reg"][dregpaste_ListOfEntries[i]] = 'true' if element == "1" else 'false'
+            with open(Registry_Path, "w") as f:
+                RegistryCP.write(f)
 
-    elif __Command__[0] == "regreset":
-        if _Mode_ != "root":
-            print(f"  {red}This command can be run only as root.{end}")
-            continue
+    elif __Command__[0] == "dregreset":
         
         print(f"  {orange}Warning: Registry will be setted back to deafult. Do you really want to continue?{end}")
-        regreset_Confirmation = input('  "confirm" to continue:  ')
+        dregreset_Confirmation = input('  "confirm" to continue:  ')
 
-        if regreset_Confirmation.lower().replace(" ", "") == "confirm":
-            open(Registry_Loc, "w+").close()
+        if dregreset_Confirmation.lower().replace(" ", "") == "confirm":
+            open(Registry_Path, "w+").close()
             Cls()
             os.system("py dash.py")
             exit()
 
         print("\n")
 
+
     # Custom commands
     elif __Command__[0] in _CustomCommandsList_:
-        RegistryCp.read(Registry_Loc)
-        if RegistryCp["reg"]["enablecustomcommands"] == "false":
+        RegistryCP.read(Registry_Path)
+        if RegistryCP["reg"]["enablecustomcommands"] == "false":
             print(f"  {red}Custom commands are disabled in registry.{end}\n")
             continue
 
-        CommandsCp.read(Commands_Loc)
+        CommandsCP.read(Commands_Path, encoding='utf-8')
         try:
-            exec(CommandsCp[__Command__[0]]["value"].replace("<br>", "\n"))
+            exec(CommandsCP[__Command__[0]]["value"].replace("<br>", "\n"))
         except Exception as e:
             print(f"  {red}Cannot execute command.{end}")
             print(f"  {red}Exception:{end} {e}\n")
 
     elif __Command__[0] == "addcustomcmd":
-        RegistryCp.read(Registry_Loc)
-        if RegistryCp["reg"]["enablecustomcommands"] == "false":
+        RegistryCP.read(Registry_Path)
+        if RegistryCP["reg"]["enablecustomcommands"] == "false":
             print(f"  {red}Custom commands are disabled in registry.{end}\n")
             continue
 
@@ -519,78 +582,81 @@ while True:
             print(f"  {red}Missing argument: <_name_>{end}\n")
             continue
 
-        CommandsCp[addcmd_Name] = {"value": "# This is your command. Use <br> to make new line."}
-        
-        with open(Commands_Loc, "w") as f:
-            CommandsCp.write(f)
+        if addcmd_Name.replace(" ","") == "":
+            print(f"  {red}Command name cannot be blank!{end}")
+            continue
 
-        os.system(f"notepad {Commands_Loc}")
+        CommandsCP[addcmd_Name] = {"value": "\"\"\" This is your command. Use <br> to make new line. To use arguments, type: '__Command__[x]' where x means place of argument. \"\"\""}
+        
+        with open(Commands_Path, "w", encoding='utf-8') as f:
+            CommandsCP.write(f)
+
+        os.system(f"notepad {Commands_Path}")
 
     elif __Command__[0] == "opencustomcmd":
-        RegistryCp.read(Registry_Loc)
-        if RegistryCp["reg"]["enablecustomcommands"] == "false":
+        RegistryCP.read(Registry_Path)
+        if RegistryCP["reg"]["enablecustomcommands"] == "false":
             print(f"  {red}Custom commands are disabled in registry.{end}\n")
             continue
 
-        os.system(f"notepad {Commands_Loc}")
+        os.system(f"notepad {Commands_Path}")
 
-    elif __Command__[0] == "makecustom":
-        RegistryCp.read(Registry_Loc)
-        if RegistryCp["reg"]["enablecustomcommands"] == "false":
+    elif __Command__[0] == "convertcustom":
+        RegistryCP.read(Registry_Path)
+        if RegistryCP["reg"]["enablecustomcommands"] == "false":
             print(f"  {red}Custom commands are disabled in registry.{end}\n")
             continue
 
         try:
-            makecustom_Mode = __Command__[1]
-            makecustom_Mode = makecustom_Mode.replace(" ","").lower()
+            convertcustom_Mode = __Command__[1]
+            convertcustom_Mode = convertcustom_Mode.replace(" ","").lower()
 
         except:
             print(f"  {red}Missing argument: <_mode_>  [Place: 1].{end} Possible values: [file/f] , [text/t]\n")
             continue
 
-        if makecustom_Mode not in ("text", "t", "file", "f"):
+        if convertcustom_Mode not in ("text", "t", "file", "f"):
             print(f"  {red}Argument error: <_mode_> [Place: 1].{end} Posible values: [file/f] , [text/t]\n")
             continue
         
-        if makecustom_Mode in ("file", "f"):
+        if convertcustom_Mode in ("file", "f"):
             try:
-                normalCode_Loc = __Command__[2].replace(" ","", 1)
-                if not os.path.exists(normalCode_Loc):
-                    print(f"  {red}Path: \"{normalCode_Loc}\" does not exists!{end}\n")
+                convertcustom_ModeF_CodePath = __Command__[2].replace(" ","", 1)
+                if not os.path.exists(convertcustom_ModeF_CodePath):
+                    print(f"  {red}Path: \"{convertcustom_ModeF_CodePath}\" does not exists!{end}\n")
                     continue 
 
             except:
                 print(f"  {red}Missing argument: <_code_>. [Place: 2]{end}\n")
                 continue
             
-            FormattedCode = open(normalCode_Loc, "r").read().replace("\n", "<br>")
-            print(FormattedCode)
+            convertcustom_FormattedCode = open(convertcustom_ModeF_CodePath, "r", encoding='utf-8').read().replace("\n", "<br>")
+            print(convertcustom_FormattedCode)
 
-            if RegistryCp["reg"]["copyOutput"] == "true":
-                pyperclip.copy(FormattedCode)
+            if RegistryCP["reg"]["copyOutput"] == "true":
+                pyperclip.copy(convertcustom_FormattedCode)
                 print(f"  {gray}(copied.){end}\n")
 
         else:
             try:
                 print("\n")
 
-                MakeCode_lines = []
-                MakeCode_Counter = 1
+                convertcustom_ModeT_LinesList = []
+                convertcustom_ModeT_LinesCounter = 1
                 while True:
-                    MakeCode_line = input(f"{MakeCode_Counter}  ")
-                    if MakeCode_line == "<stop>":
+                    convertcustom_ModeT_CurrentLine = input(f"{convertcustom_ModeT_LinesCounter}  ")
+                    if convertcustom_ModeT_CurrentLine == "<stop>":
                         break
                     else:
-                        MakeCode_lines.append(MakeCode_line)
+                        convertcustom_ModeT_LinesList.append(convertcustom_ModeT_CurrentLine)
 
-                    MakeCode_Counter += 1
+                    convertcustom_ModeT_LinesCounter += 1
 
-                MakeCode_text = '\n'.join(MakeCode_lines)
-                ReadyText = MakeCode_text.replace('\n', '<br>')
-                print(f"\n\n  Code: {ReadyText}")
+                convertcustom_ModeT_ReadyCode = '<br>'.join(convertcustom_ModeT_LinesList)
+                print(f"  Code: {convertcustom_ModeT_ReadyCode}")
 
-                if RegistryCp["reg"]["copyOutput"] == "true":
-                    pyperclip.copy(ReadyText)
+                if RegistryCP["reg"]["copyOutput"] == "true":
+                    pyperclip.copy(convertcustom_ModeT_ReadyCode)
                     print(f"  {gray}(copied.){end}\n")
 
             except:
@@ -604,11 +670,12 @@ while True:
     
         print("\n")
 
+
     # Variables
     elif __Command__[0] == "vars":
-        VarsCP.read(Vars_Loc)
-        varslist_ListOfVariables = VarsCP.sections()
-        for name in varslist_ListOfVariables:
+        VarsCP.read(Vars_Path, encoding='utf-8')
+        vars_ListOfVariables = VarsCP.sections()
+        for name in vars_ListOfVariables:
             print(f"  {name} = \"{VarsCP[name]['value']}\"")
 
         print("\n")
@@ -636,31 +703,31 @@ while True:
             continue
 
         VarsCP[varadd_Name] = {"value": varadd_Value}
-        with open(Vars_Loc, "w") as f:
+        with open(Vars_Path, "w", encoding='utf-8') as f:
             VarsCP.write(f)
 
-    elif __Command__[0] == "vardel":
+    elif __Command__[0] == "remvar":
         try:
-            vardel_Name = __Command__[1]
-            vardel_Name = vardel_Name.replace(" ","").lower()
+            remvar_Name = __Command__[1]
+            remvar_Name = remvar_Name.replace(" ","").lower()
 
         except:
             print(f"  {red}Missing argument: <_name_>{end}\n")
             continue  
 
-        VarsCP.read(Vars_Loc)
-        vardel_ListOfVariables = VarsCP.sections()
-        vardel_currentVars = [] 
-        for varname in vardel_ListOfVariables:
-            vardel_currentVars.append(varname.replace(" ","").lower())
+        VarsCP.read(Vars_Path, encoding='utf-8')
+        remvar_ListOfVariables = VarsCP.sections()
+        remvar_currentVars = [] 
+        for varname in remvar_ListOfVariables:
+            remvar_currentVars.append(varname.replace(" ","").lower())
             
-        if vardel_Name not in vardel_currentVars:
-            print(f"  {red}Variable named {vardel_Name} does not exists!{end}\n")
+        if remvar_Name not in remvar_currentVars:
+            print(f"  {red}Variable named {remvar_Name} does not exists!{end}\n")
             continue
 
         try:
-            VarsCP.remove_section(vardel_Name)    
-            with open(Vars_Loc, "w") as f:
+            VarsCP.remove_section(remvar_Name)    
+            with open(Vars_Path, "w", encoding='utf-8') as f:
                 VarsCP.write(f)
 
         except:
@@ -675,7 +742,7 @@ while True:
             print(f"  {red}Missing argument: <_name_> [Place: 1]{end}\n")
             continue  
 
-        VarsCP.read(Vars_Loc)
+        VarsCP.read(Vars_Path, encoding='utf-8')
         varset_ListOfVariables = VarsCP.sections()
         varset_currentVars = [] 
         for varname in varset_ListOfVariables:
@@ -694,14 +761,18 @@ while True:
 
         try:
             VarsCP[varset_Name]["value"] = varset_NewValue
-            with open(Vars_Loc, "w") as f:
+            with open(Vars_Path, "w", encoding='utf-8') as f:
                 VarsCP.write(f)
 
         except:
             print(f"  {red}Cannot change value.{end}")
 
+
     # Other
     elif __Command__[0] == "oscmd":
+        ClearOneLine()
+        print(f"({_Mode_}) {UserConfig.Name} {blue}{UserConfig.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
+
         try:
             oscmd_Command = __Command__[1]
         except:
@@ -712,9 +783,44 @@ while True:
             os.system(oscmd_Command)
         except Exception as exc:
             print(f"  {red}Unexcpeted error: {exc}{end}")
-            
+
+    elif __Command__[0] == "root":
+        try:
+            pyuac.runAsAdmin()
+        except:
+            print(f"  {red}Cannot run Dash with administrator permissions.{end}")
+
+    elif __Command__[0] == "viewf":
+        try:
+            viewf_file_Path = __Command__[1]
+        except:
+            print(f"  {red}Missing argument: <_file_>{end}")
+            continue
+
+        if not os.path.exists(viewf_file_Path):
+            if not os.path.exists(viewf_file_Path.replace(" ","")):
+                print(f"  {red}File does not exists{end}")
+                continue
+
+            else:
+                viewf_file_Path = viewf_file_Path.replace(" ","")
+
+        try:
+            viewf_Open = open(viewf_file_Path, "r", encoding='utf-8')
+            viewf_Lines = viewf_Open.readlines()
+            print(f"{gray}\n  File: {os.path.basename(viewf_file_Path)}{end}\n")
+            for counter, line in enumerate(viewf_Lines):
+                # Convert line
+                line = line.replace("\n","")
+                line = line.replace("=", f"{blue}={end}")
+                print(f"{orange}{'   ' if counter+1 < 10 else '  '}{counter+1}{end}  {gray}│{end}  {line} ") 
+            print("\n")
+
+        except:
+            print(f"  {red}Cannot read file.{end}")
+        
+
     else:
         ClearOneLine()
-        print(f"({_Mode_}) {UserConfig.Name} {red}{UserConfig.Cursor}{end}{SpaceAfterCursor}{CommandContent}")
+        print(f"({_Mode_}) {UserConfig.Name} {red}{UserConfig.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
 
-    
