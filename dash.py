@@ -1,3 +1,5 @@
+_Version_ = 1
+
 # Import packages
 print("  [Info] Importing packages : ", end="")
 
@@ -23,6 +25,23 @@ print("OK")
 
 # System username
 _OsUsername_ = getpass.getuser()
+
+# Check for updates
+detectedUpdate = False
+print("  [Info] Checking version : ",end="")
+git_VersionFile = "https://raw.githubusercontent.com/GentalYT/dash/main/version"
+git_Request = requests.get(git_VersionFile).text.replace("\n","")
+if _Version_ != git_Request:
+    try:
+        git_Request = int(git_Request)  
+    except:
+        print("VersionFile.NonInt",end="")
+
+    if git_Request > _Version_:
+        detectedUpdate = True  
+        print("Detected Update!")
+else:
+    print("OK")
 
 
 # Files
@@ -159,8 +178,26 @@ if RegistryCP["reg"]["showBootupInfo"] == "true":
 Cls()
 while True:
 
+    # If update detected
+    if detectedUpdate == True:
+        detectedUpdate = False
+        print(f"\n\n  Dash have detected update! [{git_Request}]")
+
+        if RegistryCP["reg"]["autoupdate"] == "true":
+            print("  Autoupdate is true, installing update.")
+            import update_code
+            exit()
+
+        else:
+            update_Ask = input("  Do you want to automaticly install update? [Y/n] >").replace(" ","").lower()
+            while update_Ask not in ("y", "n"):
+                update_Ask = input("  [Y/n] >").replace(" ","").lower()
+
+            if update_Ask == "y":
+                import update_code
+                exit()
+
     def HandleError(type, command, name, description, solution):
-        _ErrorTrigger_ = False
         _ErrorContent_ = []
         _AdvancedOutputMode_ = False
 
@@ -200,9 +237,6 @@ while True:
                 print(f"   {red}• {orange}Code:  {end}{red}<{_ErrorContent_[1]}>{end}")
                 print(f"   {red}• {orange}Info:  {end}{red}{_ErrorContent_[3]}{end} {orange}in{end} {red}{_ErrorContent_[2]}{end}")
                 print(f"   {red}• {orange}Sltn:  {end}{blue}{_ErrorContent_[5]}{end}\n")
-
-
-
 
     # Set mode
     if isAdmin() == True:
@@ -819,6 +853,27 @@ while True:
         except:
             print(f"  {red}Cannot read file.{end}")
         
+    elif __Command__[0] == "checkver":
+        detectedUpdate = False
+        print("  [Info] Checking version : ",end="")
+        git_VersionFile = "https://raw.githubusercontent.com/GentalYT/dash/main/version"
+        git_Request = requests.get(git_VersionFile).text.replace("\n","")
+        if _Version_ != git_Request:
+            try:
+                git_Request = int(git_Request)
+            except:
+                print("VersionFile.NonInt",end="")
+
+            if git_Request > _Version_:
+                detectedUpdate = True  
+                print(f"  {orange}Detected Update! [{git_Request}]{end}")
+
+            else:
+                print(f"  {green}You are up to date.{end}")
+                
+        else:
+            print(f"  {green}You are up to date.{end}")
+
 
     else:
         ClearOneLine()
