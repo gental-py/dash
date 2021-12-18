@@ -1,6 +1,3 @@
-Version=0.4
-
-
 # Dash Console.
 
 Small project to make terminal usage easier. Work's on Windows, but can be runned on other systems. 
