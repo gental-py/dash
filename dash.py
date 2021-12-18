@@ -40,8 +40,8 @@ if _Version_ != git_Request:
     if git_Request > _Version_:
         detectedUpdate = True  
         print("Detected Update!")
-else:
-    print("OK")
+
+print("OK")
 
 
 # Files
@@ -235,14 +235,16 @@ while True:
             else:
                 print(f"  {orange}===={end}{red} ERROR {end}{orange}===={end}")
                 print(f"   {red}• {orange}Code:  {end}{red}<{_ErrorContent_[1]}>{end}")
-                print(f"   {red}• {orange}Info:  {end}{red}{_ErrorContent_[3]}{end} {orange}in{end} {red}{_ErrorContent_[2]}{end}")
+                print(f"   {red}• {orange}Info:  {end}{red}{_ErrorContent_[4]}{end}")
                 print(f"   {red}• {orange}Sltn:  {end}{blue}{_ErrorContent_[5]}{end}\n")
-
-    # Set mode
-    if isAdmin() == True:
-        _Mode_ = "root" 
-    else:
-        _Mode_ = "nrml"
+        else:
+            Cls()
+            print(f"  {orange}===={end}{red} CRITICAL ERROR {end}{orange}===={end}")
+            print(f"   {red}• {orange}Code:  {end}{red}<{_ErrorContent_[1]}>{end}")
+            print(f"   {red}• {orange}Info:  {end}{red}{_ErrorContent_[4]}{end}")
+            print(f"   {red}• {orange}Sltn:  {end}{blue}{_ErrorContent_[5]}{end}\n")
+            import critical_mode
+            exit()
 
     # Read user config
     VarsCP.read(Vars_Path, encoding='utf-8')
@@ -258,6 +260,19 @@ while True:
         OsChar    = UserConfig_Read[3]
 
     _CustomCommandsList_ = CommandsCP.sections()
+
+    # Set mode
+    if isAdmin() == True:
+        if RegistryCP["reg"]["modeasemote"] == "true":
+            _Mode_ = "🔧"
+        else:
+            _Mode_ = "root" 
+            
+    else:
+        if RegistryCP["reg"]["modeasemote"] == "true":
+            _Mode_ = "👤"
+        else:
+            _Mode_ = "nrml"
 
     # Colors
     end    =  "\033[0m"
@@ -282,8 +297,12 @@ while True:
         exit()
 
     elif __Command__[0] == "checkfiles":
-        check_files.check()
-        print("  Done.")
+        try:
+            check_files.check()
+            print(f"  {green}Done.{end}")
+
+        except Exception as exc:
+            HandleError("soft", __Command__[0], exc, "Error while trying to check files.", "None")
 
     elif __Command__[0] == "restart":
         os.system("py dash.py")
@@ -299,100 +318,109 @@ while True:
         print("\n")
 
     elif __Command__[0] == "devtest":
-        # print("  •")
-        HandleError("soft", __Command__[0], "AnError", "Data you entered is gugugaga", "To repair do megapapa")
+        print("  •")
+        # HandleError("soft", "b", "c", "d", "e")
 
 
     # Settings
     elif __Command__[0] == "mycfg":
-        print(f"  Name      ==  \"{UserConfig.Name}\"")
-        print(f"  Cursor    ==  \"{UserConfig.Cursor}\"")
-        print(f"  Sepchar   ==  \"{UserConfig.Sepchar}\"")
-        print(f"  Oschar    ==  \"{UserConfig.OsChar}\"\n")
+        try:
+            print(f"  Name      ==  \"{UserConfig.Name}\"")
+            print(f"  Cursor    ==  \"{UserConfig.Cursor}\"")
+            print(f"  Sepchar   ==  \"{UserConfig.Sepchar}\"")
+            print(f"  Oschar    ==  \"{UserConfig.OsChar}\"\n")
+
+        except Exception as exc:
+            HandleError("critical", __Command__[0], exc, "Cannot read user configuration", "None")
 
     elif __Command__[0] == "setname":
         try:
             setname_NewName = __Command__[1]
         except:
-            print(f"  {red}Missing argument: <_name_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new username")
             continue
 
         if setname_NewName.replace(" ", "") == "":
-            print(f"  {red}Missing argument: <_name_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new username")
+            continue
 
         if RegistryCP["reg"]["checkArgLenght"] == "true":
             if len(setname_NewName) > 31:
-                print(f"  {red}Argument error: <_name_> is too long. [MaxLen=30]{end}\n")
-                continue
-            
-            if len(setname_NewName) == 0:
-                print(f"  {red}Argument error: <_name_> is short. [MinLen=1]{end}\n")
+                HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <name> is too long.", "Your name cannot be longer than 30 characters. You can turn off this setting in registry.")
                 continue
 
-        ConfigCP["customization"]["name"] = setname_NewName
-        with open(Config_Path, "w", encoding='utf-8') as f:
-            ConfigCP.write(f)
+        try:
+            ConfigCP["customization"]["name"] = setname_NewName
+            with open(Config_Path, "w", encoding='utf-8') as f:
+                ConfigCP.write(f)
+
+        except Exception as exc:
+            HandleError("critical", __Command__[0], exc, "Cannot write to file.", "None")
 
     elif __Command__[0] == "setcursor":
         try:
             setcursor_NewCursor = __Command__[1]
         except:
-            print(f"  {red}Missing argument: <_cursor_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <cursor> not found.", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new cursor")
             continue
 
         if setcursor_NewCursor.replace(" ", "") == "":
-            print(f"  {red}Missing argument: <_cursor_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <cursor> not found.", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new cursor")
+            continue
 
         if RegistryCP["reg"]["checkArgLenght"] == "true":
             if len(setcursor_NewCursor) > 6:
-                print(f"  {red}Argument error: <_cursor_> is too long. MaxLen=5{end}\n")
+                HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <cursor> cannot be longer than 5 characters.", "Type shorter cursor")
                 continue
-
-            if len(setcursor_NewCursor) == 0:
-                print(f"  {red}Argument error: <_cursor_> is short. [MinLen=1]{end}\n")
-                continue
-
-        ConfigCP["customization"]["cursor"] = setcursor_NewCursor
-        with open(Config_Path, "w", encoding='utf-8') as f:
-            ConfigCP.write(f)
+        
+        try:
+            ConfigCP["customization"]["cursor"] = setcursor_NewCursor
+            with open(Config_Path, "w", encoding='utf-8') as f:
+                ConfigCP.write(f)
+        except:
+            HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
+            continue
 
     elif __Command__[0] == "setsepchar":
         try:
             setsepchar_NewChar = __Command__[1]
         except:
-            print(f"  {red}Missing argument: <_sepchar_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <sepchar> not found", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new sepchar")
             continue
 
         if RegistryCP["reg"]["checkArgLenght"] == "true":
             if len(setsepchar_NewChar) > 4:
-                print(f"  {red}Argument error: <_sepchar_> is too long. [MaxLen=3]{end}\n")
+                HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <sepchar> is too long.", "Type shorter sepchar.")
                 continue
-
-            if len(setsepchar_NewChar) == 0:
-                print(f"  {red}Argument error: <_sepchar_> cannot be blank{end}")
-
-        ConfigCP["customization"]["sepchar"] = setsepchar_NewChar
-        with open(Config_Path, "w", encoding='utf-8') as f:
-            ConfigCP.write(f)
+        
+        try:
+            ConfigCP["customization"]["sepchar"] = setsepchar_NewChar
+            with open(Config_Path, "w", encoding='utf-8') as f:
+                ConfigCP.write(f)
+        except:
+            HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
 
     elif __Command__[0] == "setoschar":
         try:
             setoschar_Char = __Command__[1]
         except:
-            print(f"  {red}Missing argument: <_oschar_>{end}")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <setoschar> not found", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new setoschar")
             continue
         
         setoschar_Char = setoschar_Char.replace(" ", "")
 
         if RegistryCP["reg"]["checkArgLenght"] == "true":
             if len(setoschar_Char) > 1:
-                print(f"  {red}Argument error: <_oschar_> is too long. [MaxLen=1]{end}\n")
+                HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <setoschar> is too long.", "Type shorter setoschar.")
                 continue
-
-        ConfigCP["customization"]["oschar"] = setoschar_Char
-        with open(Config_Path, "w", encoding='utf-8') as f:
-            ConfigCP.write(f)
         
+        try:
+            ConfigCP["customization"]["oschar"] = setoschar_Char
+            with open(Config_Path, "w", encoding='utf-8') as f:
+                ConfigCP.write(f)
+        except:
+            HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
+
 
     # Network
     elif __Command__[0] == "netinfo":
@@ -405,15 +433,14 @@ while True:
             print(f" - IP:\n  Public  {green}>{end} {netinfo_PublicIP}\n  Private {green}>{end} {netinfo_PrivateIP}\n  Mac     {green}>{end} {netinfo_MacAddr}\n")
             print(f" - NAME:\n  This pc {green}>{end} {netinfo_PcName}\n")
 
-
-        except:
-            print(f"  {red}Loading informations Error{end}\n")
+        except Exception as exc:
+            HandleError("soft", __Command__[0], "FetchingInfoError", f"Cannot load informations: <{exc}>", "None")
 
     elif __Command__[0] == "dnslkp":
         try:
             dnslkp_TargetIP = __Command__[1]
         except:
-            print(f"  {red}Missing argument: <_addres_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <target> not found", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and target ip.")
             continue
 
         dnslkp_TargetIP = dnslkp_TargetIP.replace(" ", "")
@@ -430,13 +457,13 @@ while True:
             print("\n")
         
         except:
-            print(f"  {red}Cannot find out ip addres for: {end}{dnslkp_TargetIP}\n")
+            HandleError("soft", __Command__[0], "FetchingInfoError", "Cannot load informations.", "None")
 
     elif __Command__[0] == "revdnslkp":
         try:
             revdnslkp_TargetIP = __Command__[1]
         except:
-            print(f"  {red}Missing argument: <_addres_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <target> not found", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and target ip.")
             continue
 
         revdnslkp_TargetIP = revdnslkp_TargetIP.replace(" ", "")
@@ -448,18 +475,18 @@ while True:
             RegistryCP.read(Registry_Path)
             if RegistryCP["reg"]["copyOutput"] == "true":
                 pyperclip.copy(revdnslkp_OutputIP[0])
-                print(f"  {gray}(copied.){end}")
+                print(f"  {gray}(copied.)\n{end}")
         
         except:
-            print(f"  {red}Cannot find addres for: {end}{revdnslkp_TargetIP}\n")
-        print("")
+            HandleError("soft", __Command__[0], "FetchingInfoError", "Cannot load informations.", "None")
 
     elif __Command__[0] == "ipgeoinfo":
         try:
             ipgeoinfo_TargetIP = __Command__[1]
             ipgeoinfo_TargetIP = ipgeoinfo_TargetIP.replace(" ","")
+
         except:
-            print(f"  {red}Missing argument: <_ip_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <ip> not found.", "Type argument <ip>.")
             continue
 
         try:
@@ -468,36 +495,40 @@ while True:
 
             if ipgeoinfo_TargetIP.replace(" ","") == "": ipgeoinfo_TargetIP = "Localhost"
 
-            print(f"  Country:  {ipinfo_JSON['country']}     [{ipinfo_JSON['countryCode']}]")
-            print(f"  City   :  {ipinfo_JSON['city']}      [{ipinfo_JSON['zip']}]\n")
+            print(f"  Country:  {ipinfo_JSON['country']}  [{ipinfo_JSON['countryCode']}]")
+            print(f"  City   :  {ipinfo_JSON['city']}  [{ipinfo_JSON['zip']}]\n")
 
         except:
-            print(f"  {red}Error: Cannot load information about ip:{end} {ipgeoinfo_TargetIP}\n")
+            HandleError("soft", __Command__[0], "FetchingInfoError", "Cannot load informations.", "None")
 
 
     # Registry
     elif __Command__[0] == "dregshow":
-        RegistryCP.read(Registry_Path)
-        RegistryEntries = RegistryCP.items("reg")
+        try:
+            RegistryCP.read(Registry_Path)
+            RegistryEntries = RegistryCP.items("reg")
 
-        print("  ==== REGSHOW ====\n")
-        for i, entry in enumerate(RegistryEntries):
-            print(f"  [{i+1}] |  {green+'T' if entry[1] == 'true' else red+'F'}{end} {entry[0]}")
+            print("  ==== REGSHOW ====\n")
+            for i, entry in enumerate(RegistryEntries):
+                print(f"  [{i+1}] |  {green+'T' if entry[1] == 'true' else red+'F'}{end} {entry[0]}")
 
-        print("\n")
+            print("\n")
+
+        except Exception as exc:
+            HandleError("critical", __Command__[0], "LoadingRegInfoError", f"Exception: {exc}", "None")
 
     elif __Command__[0] == "dregedit":
 
         try:
             dregedit_EntryName = __Command__[1]
         except:
-            print(f"  {red}Missing argument: <_entry.name_> [place: 1]{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <entry.name> not found.", "Type argument: <entry.name>")
             continue
 
         try:
             dregedit_NewValue = __Command__[2]
         except:
-            print(f"  {red}Missing argument: <_new.value_> [place: 2]{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <entry.value> not found.", "Type argument: <entry.value>")
             continue
 
         dregedit_StableEntriesList = RegistryCP.items("reg")
@@ -505,11 +536,11 @@ while True:
         
         dregedit_EntryName = dregedit_EntryName.replace(" ", "")
         if dregedit_EntryName not in dregedit_ListOfEntries:
-            print(f"  {red}Incorrect name of entry!{end}\n")
+            HandleError("soft", __Command__[0], "EntryNotFound", "Argument: <entry.name> don't fit.", "Type correct argument: <entry.name>")
             continue
 
         if dregedit_NewValue.replace(" ", "").lower() not in ("true", "false", "1", "0", "t", "f"):
-            print(f"  {red}Value can be only{end} true {red}or{end} false{red}!{end}\n")
+            HandleError("soft", __Command__[0], "EntryValueError", "Argument: <entry.value> is incorrect.", "If you want to turn on, type: (t/true/1) otherwise: (f/false/0)")
             continue
 
         if dregedit_NewValue.replace(" ", "").lower() in ("true", "t", "1"):
@@ -524,29 +555,33 @@ while True:
                 RegistryCP.write(f)
 
         except:        
-            print(f"  {red}Cannot write new value.{end}\n")
+            HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
 
     elif __Command__[0] == "dregcopy":
-        RegistryCP.read(Registry_Path)
-        dregcopy_StableEntriesList = RegistryCP.items("reg")
+        try:
+            RegistryCP.read(Registry_Path)
+            dregcopy_StableEntriesList = RegistryCP.items("reg")
 
-        dregedit_OutputList = []
-        for i, entry in enumerate(dregcopy_StableEntriesList):
-            dregedit_OutputList.append("1" if entry[1] == 'true' else "0")
+            dregedit_OutputList = []
+            for i, entry in enumerate(dregcopy_StableEntriesList):
+                dregedit_OutputList.append("1" if entry[1] == 'true' else "0")
 
-        print(f"  {green}Your registry code:{end} {''.join(dregedit_OutputList)}", end="")
-        if RegistryCP["reg"]["copyoutput"] == "true":
-            pyperclip.copy(''.join(dregedit_OutputList))
-            print(f"  {gray}(copied.){end}")
+            print(f"  {green}Your registry code:{end} {''.join(dregedit_OutputList)}", end="")
+            if RegistryCP["reg"]["copyoutput"] == "true":
+                pyperclip.copy(''.join(dregedit_OutputList))
+                print(f"  {gray}(copied.){end}")
 
-        print("\n")
+            print("\n")
+
+        except:
+            HandleError("critical", __Command__[0], "LoadingRegInfoError")
 
     elif __Command__[0] == "dregpaste":
         try:
             dregpaste_Code = __Command__[1]
             dregpaste_Code = dregpaste_Code.replace(" ", "")
         except:
-            print(f"  {red}Missing argument: <_new.reg_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <code> not found.", "Type argument: <code>")
             continue
 
         dregpaste_CodeList = list(dregpaste_Code)
@@ -555,25 +590,28 @@ while True:
         for element in dregpaste_CodeList:
             if element != "1":
                 if element != "0":
-                    print(f"  {red}Argument error: Code can handle only 1 and 0.{end}\n")
+                    HandleError("soft", __Command__[0], "RegCodeValueError", f"Element: {element} is not 0 or 1", "None")
                     dregpaste_ElementErrorTrigger = True 
             if dregpaste_ElementErrorTrigger == True:
                 break
 
         if dregpaste_ElementErrorTrigger == True:
-                continue
+            continue
 
         dregpaste_StableEntriesList = RegistryCP.items("reg")
         dregpaste_ListOfEntries = [entry[0] for entry in dregpaste_StableEntriesList]
         
         if len(dregpaste_ListOfEntries) != len(dregpaste_CodeList):
-            print(f"  {red}Argument error: Entried code is too long or too short.{end}\n")
+            HandleError("soft", __Command__[0], "ArgumentLenghtError", "Typed code is too long or too short.", "Check lenght of code.")
             continue 
         
-        for i, element in enumerate(dregpaste_CodeList):
-            RegistryCP["reg"][dregpaste_ListOfEntries[i]] = 'true' if element == "1" else 'false'
-            with open(Registry_Path, "w") as f:
-                RegistryCP.write(f)
+        try:
+            for i, element in enumerate(dregpaste_CodeList):
+                RegistryCP["reg"][dregpaste_ListOfEntries[i]] = 'true' if element == "1" else 'false'
+                with open(Registry_Path, "w") as f:
+                    RegistryCP.write(f)
+        except:
+             HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
 
     elif __Command__[0] == "dregreset":
         
@@ -613,17 +651,20 @@ while True:
             addcmd_Name = __Command__[1]
             addcmd_Name = addcmd_Name.replace(" ","").lower()
         except:
-            print(f"  {red}Missing argument: <_name_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Type argument: <name>.")
             continue
 
         if addcmd_Name.replace(" ","") == "":
-            print(f"  {red}Command name cannot be blank!{end}")
+            HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <name> cannot be blank.", "Type longer argument: <name>.")
             continue
 
         CommandsCP[addcmd_Name] = {"value": "\"\"\" This is your command. Use <br> to make new line. To use arguments, type: '__Command__[x]' where x means place of argument. \"\"\""}
         
-        with open(Commands_Path, "w", encoding='utf-8') as f:
-            CommandsCP.write(f)
+        try:
+            with open(Commands_Path, "w", encoding='utf-8') as f:
+                CommandsCP.write(f)
+        except:
+             HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
 
         os.system(f"notepad {Commands_Path}")
 
@@ -646,22 +687,22 @@ while True:
             convertcustom_Mode = convertcustom_Mode.replace(" ","").lower()
 
         except:
-            print(f"  {red}Missing argument: <_mode_>  [Place: 1].{end} Possible values: [file/f] , [text/t]\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <mode> not found.", "Possible modes: [text/t] - type code inside dsah, [file/f] - convert file to code")
             continue
 
         if convertcustom_Mode not in ("text", "t", "file", "f"):
-            print(f"  {red}Argument error: <_mode_> [Place: 1].{end} Posible values: [file/f] , [text/t]\n")
+            HandleError("soft", __Command__[0], "ArgumentValueError", "Argument value: <mode> is incorrect.", "Possible modes: [text/t] - type code inside dsah, [file/f] - convert file to code")
             continue
         
         if convertcustom_Mode in ("file", "f"):
             try:
                 convertcustom_ModeF_CodePath = __Command__[2].replace(" ","", 1)
                 if not os.path.exists(convertcustom_ModeF_CodePath):
-                    print(f"  {red}Path: \"{convertcustom_ModeF_CodePath}\" does not exists!{end}\n")
+                    HandleError("soft", __Command__[0], "ArgumentValueError", "Argument: <path> is incorrect.", "That path does not exists.")
                     continue 
 
             except:
-                print(f"  {red}Missing argument: <_code_>. [Place: 2]{end}\n")
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <path> not found.", "Type <path> argument")
                 continue
             
             convertcustom_FormattedCode = open(convertcustom_ModeF_CodePath, "r", encoding='utf-8').read().replace("\n", "<br>")
@@ -698,21 +739,29 @@ while True:
                 continue
 
     elif __Command__[0] == "customlist":
-        print("  Custom commands:")
-        for command in _CustomCommandsList_:
-            print(f"    • {command}")
-    
-        print("\n")
+        try:
+            print("  Custom commands:")
+            for command in _CustomCommandsList_:
+                print(f"    • {command}")
+        
+            print("\n")
+
+        except:
+            HandleError("critical", __Command__[0], "FileError", "Cannot output file content.", "None")
 
 
     # Variables
     elif __Command__[0] == "vars":
-        VarsCP.read(Vars_Path, encoding='utf-8')
-        vars_ListOfVariables = VarsCP.sections()
-        for name in vars_ListOfVariables:
-            print(f"  {name} = \"{VarsCP[name]['value']}\"")
+        try:
+            VarsCP.read(Vars_Path, encoding='utf-8')
+            vars_ListOfVariables = VarsCP.sections()
+            for name in vars_ListOfVariables:
+                print(f"  {name} = \"{VarsCP[name]['value']}\"")
 
-        print("\n")
+            print("\n")
+
+        except:
+             HandleError("critical", __Command__[0], "FileError", "Cannot output file content.", "None")
         
     elif __Command__[0] == "varadd":
         try:
@@ -720,12 +769,12 @@ while True:
             varadd_Name = varadd_Name.replace(" ","").lower()
             
         except:
-            print(f"  {red}Missing argument: <_name_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Type <name> argument.")
             continue  
 
         varadd_ListOfVariables = VarsCP.sections()
         if varadd_Name in varadd_ListOfVariables:
-            print(f"  {red}Variable named {varadd_Name} already exists!{end}\n")
+            HandleError("soft", __Command__[0], "ArgumentError", f"Variable named: \"{varadd_Name}\" already exists.", "Edit varaible value or crate new with other name.")
             continue
 
         try:
@@ -733,7 +782,7 @@ while True:
             varadd_Value = varadd_Value.replace(" ", "", 1)
 
         except:
-            print(f"  {red}Missing argument: <_value_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <value> not found.", "Type <value> argument.")
             continue
 
         VarsCP[varadd_Name] = {"value": varadd_Value}
@@ -746,7 +795,7 @@ while True:
             remvar_Name = remvar_Name.replace(" ","").lower()
 
         except:
-            print(f"  {red}Missing argument: <_name_>{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Type <name> argument.")
             continue  
 
         VarsCP.read(Vars_Path, encoding='utf-8')
@@ -756,7 +805,7 @@ while True:
             remvar_currentVars.append(varname.replace(" ","").lower())
             
         if remvar_Name not in remvar_currentVars:
-            print(f"  {red}Variable named {remvar_Name} does not exists!{end}\n")
+            HandleError("soft", __Command__[0], "ArgumentError", f"Varaible \"{remvar_Name}\" does not exists", "Type correct argument <name>.")
             continue
 
         try:
@@ -765,7 +814,7 @@ while True:
                 VarsCP.write(f)
 
         except:
-            print(f"  {red}Cannot delete variable.{end}")
+             HandleError("critical", __Command__[0], "FileError", "Cannot delete variable.", "None")
 
     elif __Command__[0] == "varset":
         try:
@@ -773,7 +822,7 @@ while True:
             varset_Name = varset_Name.replace(" ","").lower()
 
         except:
-            print(f"  {red}Missing argument: <_name_> [Place: 1]{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Type <name> argument.")
             continue  
 
         VarsCP.read(Vars_Path, encoding='utf-8')
@@ -783,14 +832,14 @@ while True:
             varset_currentVars.append(varname.replace(" ","").lower())
             
         if varset_Name not in varset_currentVars:
-            print(f"  {red}Variable named {varset_Name} does not exists!{end}\n")
+            HandleError("soft", __Command__[0], "ArgumentError", "That variable does't exists.", "Type correct variable name.")
             continue
 
         try:
             varset_NewValue = __Command__[2]
 
         except:
-            print(f"  {red}Missing argument: <_new.value_> [Place: 2]{end}\n")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <value> not found.", "Type <value> argument.")
             continue
 
         try:
@@ -799,7 +848,7 @@ while True:
                 VarsCP.write(f)
 
         except:
-            print(f"  {red}Cannot change value.{end}")
+            HandleError("soft", __Command__[0], "ArgumentError", f"Varaible \"{remvar_Name}\" does not exists", "Type correct argument <name>.")
 
 
     # Other
@@ -810,7 +859,7 @@ while True:
         try:
             oscmd_Command = __Command__[1]
         except:
-            print(f"  {red}Missing argument: <_command_>{end}")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <command> not found.", "Type <command> argument.")
             continue
 
         try:
@@ -828,12 +877,12 @@ while True:
         try:
             viewf_file_Path = __Command__[1]
         except:
-            print(f"  {red}Missing argument: <_file_>{end}")
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <file> not found.", "Type <file> argument.")
             continue
 
         if not os.path.exists(viewf_file_Path):
             if not os.path.exists(viewf_file_Path.replace(" ","")):
-                print(f"  {red}File does not exists{end}")
+                HandleError("soft", __Command__[0], "ArgumentError", "Path does not exists.", "Type correct <path> argument.")
                 continue
 
             else:
@@ -851,7 +900,7 @@ while True:
             print("\n")
 
         except:
-            print(f"  {red}Cannot read file.{end}")
+            HandleError("soft", __Command__[0], "LocalFileError", "Cannot read file.", "Check if file permissions are great.")
         
     elif __Command__[0] == "checkver":
         detectedUpdate = False
@@ -862,7 +911,8 @@ while True:
             try:
                 git_Request = int(git_Request)
             except:
-                print("VersionFile.NonInt",end="")
+                print("VersionFile.NonInt - Cannot check.")
+                continue
 
             if git_Request > _Version_:
                 detectedUpdate = True  

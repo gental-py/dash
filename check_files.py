@@ -110,13 +110,14 @@ def check():
 
     # reg.dash
     try:
-        EntriesList = ["advancederroroutput", "checkarglenght", "spaceaftercursor", "enablecolors", "copyoutput", "showbootupinfo", "enablecustomcommands"]
+        EntriesList = ["modeasemote", "advancederroroutput", "checkarglenght", "spaceaftercursor", "enablecolors", "copyoutput", "showbootupinfo", "enablecustomcommands"]
 
         RegistryCP.read(Registry_Loc)
         RegEntries = RegistryCP.items("reg")
 
         # Checking entries values
         for Entry in RegEntries:
+
             # Check if entry value is true or false
             if Entry[1] != "true" and Entry[1] != "false":
                 print("_registry.nonbooleanvalue_",end="")
@@ -126,7 +127,7 @@ def check():
 
             # Check for invalid entry
             if Entry[0] not in EntriesList:
-                print(f"_registry.unxcptentry_[{Entry[0]}]",end="")
+                print(f"_registry.unxcptentry_",end="")
                 RegistryCP.remove_option("reg", Entry[0])
                 with open(Registry_Loc, "w") as f:
                     RegistryCP.write(f)
@@ -135,14 +136,14 @@ def check():
         EntriesNamesList = [RegEntries[x][0] for x in range(len(RegEntries))]
         for mainEntryName in EntriesList:
             if mainEntryName not in EntriesNamesList:
-                print(f"_registry.missingentry_[{Entry[0]}]",end="")
+                print(f"_registry.missingentry_",end="")
                 RegistryCP["reg"][mainEntryName] = "false"
                 with open(Registry_Loc, "w") as f:
                     RegistryCP.write(f)
     except:
         print("_regen.registry_",end="")
         RegenerateFile(Registry_Loc)
-        RegistryCP["reg"] = {"checkArgLenght": "true", "spaceAfterCursor": "true", "enableColors": "true", "copyOutput": "false", "showBootupInfo": "false", "enablecustomcommands": "true", "advancedErrorOutput": "false"}
+        RegistryCP["reg"] = {"modeAsEmote": "false", "checkArgLenght": "true", "spaceAfterCursor": "true", "enableColors": "true", "copyOutput": "false", "showBootupInfo": "false", "enablecustomcommands": "true", "advancedErrorOutput": "false"}
         with open(Registry_Loc, "w") as file:
             RegistryCP.write(file)
 
@@ -192,4 +193,14 @@ def check():
         with open(Config_Loc, "w") as file:
             ConfigCP.write(file)
 
+    
+    # Check if code is runable
+    try:
+        import dash
+    except:
+        try:
+            import update_code
+        except:
+            print("Cannot find update_code.py...", end="")
+            
     print(" | Validation: check_files.py",end="")

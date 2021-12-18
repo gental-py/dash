@@ -1,4 +1,3 @@
-
 def InstallRequiredPackages():
 
     if __import__("platform").system() != "Windows":
