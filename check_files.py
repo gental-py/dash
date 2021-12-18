@@ -193,14 +193,5 @@ def check():
         with open(Config_Loc, "w") as file:
             ConfigCP.write(file)
 
-    
-    # Check if code is runable
-    try:
-        import dash
-    except:
-        try:
-            import update_code
-        except:
-            print("Cannot find update_code.py...", end="")
             
     print(" | Validation: check_files.py",end="")
