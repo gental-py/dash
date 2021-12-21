@@ -1,6 +1,8 @@
 def check():
     import os, getpass
 
+    __Validation = False
+
     try:
         import configparser as cp
 
@@ -29,6 +31,7 @@ def check():
     Registry_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\reg.dash"
     MainFolder_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\"
     Commands_Loc     = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\commands.dash"
+
 
     # Does files exists?
 
@@ -83,8 +86,9 @@ def check():
                 vars_open_Wp = open(Vars_Loc, "w+", encoding="utf-8")
                 vars_open_Wp.write(var_Content)
                 vars_open_Wp.close()   
-    except:
-        print("_regen.vars_",end="")
+    except Exception as e:
+
+        print("_regen.vars_ ",end="")
         RegenerateFile(Vars_Loc)
 
     # commands.dash
@@ -110,7 +114,7 @@ def check():
 
     # reg.dash
     try:
-        EntriesList = ["modeasemote", "advancederroroutput", "checkarglenght", "spaceaftercursor", "enablecolors", "copyoutput", "showbootupinfo", "enablecustomcommands"]
+        EntriesList = ["autoupdate", "modeasemote", "advancederroroutput", "checkarglenght", "spaceaftercursor", "enablecolors", "copyoutput", "showbootupinfo", "enablecustomcommands"]
 
         RegistryCP.read(Registry_Loc)
         RegEntries = RegistryCP.items("reg")
@@ -143,7 +147,7 @@ def check():
     except:
         print("_regen.registry_",end="")
         RegenerateFile(Registry_Loc)
-        RegistryCP["reg"] = {"modeAsEmote": "false", "checkArgLenght": "true", "spaceAfterCursor": "true", "enableColors": "true", "copyOutput": "false", "showBootupInfo": "false", "enablecustomcommands": "true", "advancedErrorOutput": "false"}
+        RegistryCP["reg"] = {"autoupdate": "false", "modeAsEmote": "false", "checkArgLenght": "true", "spaceAfterCursor": "true", "enableColors": "true", "copyOutput": "false", "showBootupInfo": "false", "enablecustomcommands": "true", "advancedErrorOutput": "false"}
         with open(Registry_Loc, "w") as file:
             RegistryCP.write(file)
 
@@ -193,5 +197,83 @@ def check():
         with open(Config_Loc, "w") as file:
             ConfigCP.write(file)
 
+    __Validation = True
             
-    print(" | Validation: check_files.py",end="")
+    print(f"[Validation: {__Validation}]",end="")
+
+
+def copy_recovery():
+    print("Staus: <")
+    print("  * check files : ",end="")
+    check()
+    print(" : OK")
+
+    import os, getpass
+    _OsUsername_ = getpass.getuser()
+
+    RCV_Main = f"C:\\Users\\{_OsUsername_}\\Appdata\\LocalLow\\.dash_recovery\\"
+
+    print("  * main folder ",end="")
+
+    # Create Main folder
+    if not os.path.exists(RCV_Main):
+        os.mkdir(RCV_Main)
+        print(": CREATED : OK")
+    else:
+        print(": OK")
+
+    # Move files from .dash folder
+    Vars_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\vars.dash"
+    Config_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\config.dash"
+    Registry_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\reg.dash"
+    Commands_Loc   = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\commands.dash"
+    
+
+    FilesList = [Vars_Loc, Config_Loc, Registry_Loc, Commands_Loc]
+
+    for file in FilesList:
+        print(f"FILE : {file}")
+
+        if not os.path.exists(file):
+            print("  skipping - not exists.")
+
+        else:
+            try:
+                os.system(f"copy {file} {RCV_Main}")
+
+            except Exception as exc:
+                print(f"Error: {exc}") 
+
+    print("      > : ",end="")
+
+
+def paste_recovery():
+    import os, getpass
+
+    _OsUsername_ = getpass.getuser()
+    RCV_Main = f"C:\\Users\\{_OsUsername_}\\Appdata\\LocalLow\\.dash_recovery\\"
+    Main_Folder = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\"
+
+    print("Status: <")
+
+    FilesList = ["vars.dash", "reg.dash", "config.dash", "commands.dash"]
+
+    for file in FilesList:
+        print(f"FILE : {file}")
+        if not os.path.exists(RCV_Main+file):
+            print("  skipping - not exists.")
+
+        else:
+            try:
+                os.remove(Main_Folder+file)
+                os.system(f"copy {RCV_Main}{file} {Main_Folder}")
+
+            except Exception as exc:
+                print(f"Error: {exc}")
+
+    print("      > : ",end="") 
+    print("\n")
+
+
+
+

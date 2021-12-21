@@ -1,7 +1,7 @@
-_Version_ = 2
+_Version_ = 4
 
 # Import packages
-print("  [Info] Importing packages : ", end="")
+print("  [Info] Importing packages: ", end="")
 
 try:
     import pyuac, sys, os, platform, getpass, socket, requests, getmac, pyperclip, configparser as cp, ctypes
@@ -28,14 +28,14 @@ _OsUsername_ = getpass.getuser()
 
 # Check for updates
 detectedUpdate = False
-print("  [Info] Checking version : ",end="")
+print("  [Info] Checking version  : ",end="")
 git_VersionFile = "https://raw.githubusercontent.com/GentalYT/dash/main/version"
 git_Request = requests.get(git_VersionFile).text.replace("\n","")
 if _Version_ != git_Request:
     try:
         git_Request = int(git_Request)  
     except:
-        print("VersionFile.NonInt",end="")
+        print("VersionFile.NonIntValue",end="")
 
     if git_Request > _Version_:
         detectedUpdate = True  
@@ -266,8 +266,7 @@ while True:
         if RegistryCP["reg"]["modeasemote"] == "true":
             _Mode_ = "🔧"
         else:
-            _Mode_ = "root" 
-            
+            _Mode_ = "root"            
     else:
         if RegistryCP["reg"]["modeasemote"] == "true":
             _Mode_ = "👤"
@@ -296,14 +295,6 @@ while True:
     if __Command__[0]   == "exit":
         exit()
 
-    elif __Command__[0] == "checkfiles":
-        try:
-            check_files.check()
-            print(f"  {green}Done.{end}")
-
-        except Exception as exc:
-            HandleError("soft", __Command__[0], exc, "Error while trying to check files.", "None")
-
     elif __Command__[0] == "restart":
         os.system("py dash.py")
         Cls()
@@ -319,7 +310,6 @@ while True:
 
     elif __Command__[0] == "devtest":
         print("  •")
-        # HandleError("soft", "b", "c", "d", "e")
 
 
     # Settings
@@ -333,7 +323,7 @@ while True:
         except Exception as exc:
             HandleError("critical", __Command__[0], exc, "Cannot read user configuration", "None")
 
-    elif __Command__[0] == "setname":
+    elif __Command__[0] == "set.name":
         try:
             setname_NewName = __Command__[1]
         except:
@@ -357,7 +347,7 @@ while True:
         except Exception as exc:
             HandleError("critical", __Command__[0], exc, "Cannot write to file.", "None")
 
-    elif __Command__[0] == "setcursor":
+    elif __Command__[0] == "set.cursor":
         try:
             setcursor_NewCursor = __Command__[1]
         except:
@@ -381,7 +371,7 @@ while True:
             HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
             continue
 
-    elif __Command__[0] == "setsepchar":
+    elif __Command__[0] == "set.sepchar":
         try:
             setsepchar_NewChar = __Command__[1]
         except:
@@ -393,6 +383,10 @@ while True:
                 HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <sepchar> is too long.", "Type shorter sepchar.")
                 continue
         
+        if "." in setsepchar_NewChar:
+            print(f"  {orange}Sepchar cannot include dot (\".\") becouse of some commands names conflict.")
+            continue
+
         try:
             ConfigCP["customization"]["sepchar"] = setsepchar_NewChar
             with open(Config_Path, "w", encoding='utf-8') as f:
@@ -400,7 +394,7 @@ while True:
         except:
             HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
 
-    elif __Command__[0] == "setoschar":
+    elif __Command__[0] == "set.oschar":
         try:
             setoschar_Char = __Command__[1]
         except:
@@ -503,7 +497,7 @@ while True:
 
 
     # Registry
-    elif __Command__[0] == "dregshow":
+    elif __Command__[0] == "dreg.show":
         try:
             RegistryCP.read(Registry_Path)
             RegistryEntries = RegistryCP.items("reg")
@@ -517,7 +511,7 @@ while True:
         except Exception as exc:
             HandleError("critical", __Command__[0], "LoadingRegInfoError", f"Exception: {exc}", "None")
 
-    elif __Command__[0] == "dregedit":
+    elif __Command__[0] == "dreg.edit":
 
         try:
             dregedit_EntryName = __Command__[1]
@@ -557,7 +551,7 @@ while True:
         except:        
             HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
 
-    elif __Command__[0] == "dregcopy":
+    elif __Command__[0] == "dreg.copy":
         try:
             RegistryCP.read(Registry_Path)
             dregcopy_StableEntriesList = RegistryCP.items("reg")
@@ -576,7 +570,7 @@ while True:
         except:
             HandleError("critical", __Command__[0], "LoadingRegInfoError")
 
-    elif __Command__[0] == "dregpaste":
+    elif __Command__[0] == "dreg.paste":
         try:
             dregpaste_Code = __Command__[1]
             dregpaste_Code = dregpaste_Code.replace(" ", "")
@@ -613,9 +607,9 @@ while True:
         except:
              HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
 
-    elif __Command__[0] == "dregreset":
+    elif __Command__[0] == "dreg.reset":
         
-        print(f"  {orange}Warning: Registry will be setted back to deafult. Do you really want to continue?{end}")
+        print(f"  {orange}Warning: Registry will be set back to deafult. Do you really want to continue?{end}")
         dregreset_Confirmation = input('  "confirm" to continue:  ')
 
         if dregreset_Confirmation.lower().replace(" ", "") == "confirm":
@@ -641,7 +635,7 @@ while True:
             print(f"  {red}Cannot execute command.{end}")
             print(f"  {red}Exception:{end} {e}\n")
 
-    elif __Command__[0] == "addcustomcmd":
+    elif __Command__[0] == "cstm.add":
         RegistryCP.read(Registry_Path)
         if RegistryCP["reg"]["enablecustomcommands"] == "false":
             print(f"  {red}Custom commands are disabled in registry.{end}\n")
@@ -668,7 +662,7 @@ while True:
 
         os.system(f"notepad {Commands_Path}")
 
-    elif __Command__[0] == "opencustomcmd":
+    elif __Command__[0] == "cstm.open":
         RegistryCP.read(Registry_Path)
         if RegistryCP["reg"]["enablecustomcommands"] == "false":
             print(f"  {red}Custom commands are disabled in registry.{end}\n")
@@ -676,7 +670,7 @@ while True:
 
         os.system(f"notepad {Commands_Path}")
 
-    elif __Command__[0] == "convertcustom":
+    elif __Command__[0] == "cstm.convert":
         RegistryCP.read(Registry_Path)
         if RegistryCP["reg"]["enablecustomcommands"] == "false":
             print(f"  {red}Custom commands are disabled in registry.{end}\n")
@@ -738,7 +732,7 @@ while True:
                 print(f"  {red}Missing argument: <_code_>. [Place: 2]{end}\n")
                 continue
 
-    elif __Command__[0] == "customlist":
+    elif __Command__[0] == "cstm.list":
         try:
             print("  Custom commands:")
             for command in _CustomCommandsList_:
@@ -751,7 +745,7 @@ while True:
 
 
     # Variables
-    elif __Command__[0] == "vars":
+    elif __Command__[0] == "var.list":
         try:
             VarsCP.read(Vars_Path, encoding='utf-8')
             vars_ListOfVariables = VarsCP.sections()
@@ -763,7 +757,7 @@ while True:
         except:
              HandleError("critical", __Command__[0], "FileError", "Cannot output file content.", "None")
         
-    elif __Command__[0] == "varadd":
+    elif __Command__[0] == "var.add":
         try:
             varadd_Name = __Command__[1]
             varadd_Name = varadd_Name.replace(" ","").lower()
@@ -789,7 +783,7 @@ while True:
         with open(Vars_Path, "w", encoding='utf-8') as f:
             VarsCP.write(f)
 
-    elif __Command__[0] == "remvar":
+    elif __Command__[0] == "var.rem":
         try:
             remvar_Name = __Command__[1]
             remvar_Name = remvar_Name.replace(" ","").lower()
@@ -816,7 +810,7 @@ while True:
         except:
              HandleError("critical", __Command__[0], "FileError", "Cannot delete variable.", "None")
 
-    elif __Command__[0] == "varset":
+    elif __Command__[0] == "var.set":
         try:
             varset_Name = __Command__[1]
             varset_Name = varset_Name.replace(" ","").lower()
@@ -849,6 +843,16 @@ while True:
 
         except:
             HandleError("soft", __Command__[0], "ArgumentError", f"Varaible \"{remvar_Name}\" does not exists", "Type correct argument <name>.")
+
+
+    # Recovery
+    elif __Command__[0] == "rcv.save":
+        check_files.copy_recovery()
+        print(f"{green}Done.{end}")
+
+    elif __Command__[0] == "rcv.recover":
+        check_files.paste_recovery()
+        print(f"{green}Done.{end}")
 
 
     # Other
@@ -904,25 +908,46 @@ while True:
         
     elif __Command__[0] == "checkver":
         detectedUpdate = False
-        print("  [Info] Checking version : ",end="")
+        print("  Checking version : ",end="")
         git_VersionFile = "https://raw.githubusercontent.com/GentalYT/dash/main/version"
         git_Request = requests.get(git_VersionFile).text.replace("\n","")
         if _Version_ != git_Request:
             try:
                 git_Request = int(git_Request)
             except:
-                print("VersionFile.NonInt - Cannot check.")
+                print("VersionFile.NonInt - Cannot check.\n")
                 continue
 
             if git_Request > _Version_:
                 detectedUpdate = True  
-                print(f"  {orange}Detected Update! [{git_Request}]{end}")
+                print(f"{orange}Detected Update! [{git_Request}]{end}\n")
 
             else:
-                print(f"  {green}You are up to date.{end}")
+                print(f"{green}You are up to date. [{git_Request}]{end}\n")
                 
         else:
-            print(f"  {green}You are up to date.{end}")
+            print(f"{green}You are up to date. [{git_Request}]{end}\n")
+
+    elif __Command__[0] == "checkfiles":
+        try:
+            check_files.check()
+            print(f"  {green}Done.\n{end}")
+
+        except Exception as exc:
+            HandleError("critical", __Command__[0], exc, "Error while trying to check files.", "None")
+
+    elif __Command__[0] == "debg.exec":
+        try:
+            debset_VarName = __Command__[1].replace(" ","",1)
+        except:
+            HandleError("soft", __Command__[0], "MissingArgument", "Argument: <command> not found.", "Type <command> argument.")
+            continue
+
+        try:
+            exec(f"{debset_VarName}")
+            print(f"  {green}Succesfully executed.{end}\n")
+        except Exception as exc:
+            print(f"  {red}Cannot execute.\n  Exception:{end} {exc}\n")
 
 
     else:
