@@ -190,6 +190,13 @@ def check():
                 ConfigCP["customization"][mainOption] = "!G"
                 with open(Config_Loc, "w") as f:
                     ConfigCP.write(f)
+                    
+        # Check if sepchar includes dot.
+        if "." in ConfigCP["customization"]["sepchar"]:
+            print("_config.dotinsepchar_",end="")
+            ConfigCP["customization"]["sepchar"] = "!"
+            with open(Config_Loc, "w") as f:
+                ConfigCP.write(f)
     except:
         print("_regen.config_",end="")
         RegenerateFile(Config_Loc)
