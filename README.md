@@ -1,6 +1,5 @@
 # Dash Console.
-
-Small project to make terminal usage easier. Work's on Windows, but can be runned on other systems. 
+~ Small project to make terminal usage easier. Work's on Windows, but can be runned on other systems. 
 
 
 ## Author
@@ -9,33 +8,19 @@ Small project to make terminal usage easier. Work's on Windows, but can be runne
 
 
 ## Features
-
 - Easy to use.
 - Full customization.
 - Custom commands.
 - Custom separator.
 - Easy and clear interface.
-
-
-## Installation
-
-1.
-Download and run `dash.py`. Other files will be automaticly generated.
-
-2.
-```bash
-  npm install dash
-  cd dash
-  py dash.py
-```
+- Lot of commands
 
 
 ## What is `sepchar`?
-Sepchar is character that will separate arguments. Deafult = `.`. You can test it by typing: `testarg . an argument . second arg` etc.
+Sepchar is character that will separate arguments. Deafult = `!`. Example: `var.add ! Age ! 21` 
 
 
 ## Commands
-
 | Command                        | Effect                                     | 
 |--------------------------------|--------------------------------------------|
 |     **Basics**                 |                                            |
@@ -77,12 +62,6 @@ Sepchar is character that will separate arguments. Deafult = `.`. You can test i
 | `viewf <path>`                 | Display file with simple highlithing.      |                        
 | `checkver`				             | Shows local version and check for updates. |
 | `checkfiles`                   | Check program files health.                |
-
-
-
-
-
-
 
 
 
