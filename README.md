@@ -36,14 +36,49 @@ Sepchar is character that will separate arguments. Deafult = `.`. You can test i
 
 ## Commands
 
-| Command        | Usage                   | 
-|----------------|-------------------------|
-|     Basics     |                         |
-| `exit`         | Exit program.           |
-| `restart`      | Restart program.        |
-| `cls`          | Clear screen.           |
-|     Config     |                         |
-| `mycfg`        | Display current config. |
+| Command                        | Effect                                     | 
+|--------------------------------|--------------------------------------------|
+|     **Basics**                 |                                            |
+| `exit`                         | Exit program.                              |
+| `restart`                      | Restart program.                           |
+| `cls`                          | Clear screen.                              | 
+|     **Config**                 |                                            |
+| `mycfg`                        | Display current config.                    |
+| `set.name <name>`              | Set new name.                              |
+| `set.cursor <cursor>`          | Set new cursor.                            |
+| `set.sepchar <sepchar>`        | Set new sepchar.                           |
+| `set.oschar <oschar>`          | Set new system command prefix.             |    
+|     **Network**                |                                            |
+| `netinfo`                      | Display your network info.                 |
+| `dnslkp <target.addr>`         | Dns lookup an addres.                      |
+| `revdnslkp <target.ip>`        | Reversed DNS lookup. (ip->addr)            |
+|     **Dash Registry**          |                                            |
+| `dreg.show`                    | Show entries and values.                   |
+| `dreg.edit <entry> <value>`    | Change entry value. [true/false]           |
+| `dreg.copy`                    | Copy current registry code.                |
+| `dreg.paste <code>`            | Paste registry code.                       | 
+| `dreg.reset`                   | Reset registry.                            |
+|     **Custom Commands**        |                                            |
+| `<custom.name>`                | Execute custom command.                    |
+| `cstm.add <name>`              | Create custom command.                     |
+| `cstm.open`                    | Open custom commands file.                 |
+| `cstm.convert <mode> <%path>`  | Convert py script to dash. <text/file>     |
+| `cstm.list`                    | Lists all custom commands.                 |
+|     **Variables**              |                                            |
+| `var.list`                     | Lists all variables and their values.      |
+| `var.add <name> <value>`       | Create variable and assign value.          |
+| `var.rem <name>`               | Remove variable.                           |
+| `var.set <name> <value>`       | Assign new value for variable.             |
+|     **Recovery**               |                                            |
+| `rcv.save`                     | Save current user files image.             |
+| `rcv.restore`                  | Restore saved files.                       |
+|     **Other**                  |                                            |
+| `root`                         | Try to open Dash with root permisions.     |
+| `viewf <path>`                 | Display file with simple highlithing.      |                        
+| `checkver`				             | Shows local version and check for updates. |
+| `checkfiles`                   | Check program files health.                |
+
+
 
 
 
