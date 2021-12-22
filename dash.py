@@ -1,5 +1,6 @@
+_Version_ = 6
+
 try:
-    _Version_ = 5
 
     # Import packages
     print("  [Info] Importing packages: ", end="")
@@ -856,7 +857,7 @@ try:
             files_operations.copy_recovery()
             print(f"{green}Done.{end}")
 
-        elif __Command__[0] == "rcv.recover":
+        elif __Command__[0] == "rcv.restore":
             files_operations.paste_recovery()
             print(f"{green}Done.{end}")
 
@@ -878,10 +879,11 @@ try:
                 print(f"  {red}Unexcpeted error: {exc}{end}")
 
         elif __Command__[0] == "root":
-            try:
-                pyuac.runAsAdmin()
-            except:
-                print(f"  {red}Cannot run Dash with administrator permissions.{end}")
+            # try:
+            #     pyuac.runAsAdmin()
+            # except:
+            #     print(f"  {red}Cannot run Dash with administrator permissions.{end}")
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
 
         elif __Command__[0] == "viewf":
             try:
@@ -915,7 +917,8 @@ try:
             
         elif __Command__[0] == "checkver":
             detectedUpdate = False
-            print("  Checking version : ",end="")
+            print(f"  Local version : {_Version_}")
+            print("  Checking online version : ",end="")
             git_VersionFile = "https://raw.githubusercontent.com/GentalYT/dash/main/version"
             git_Request = requests.get(git_VersionFile).text.replace("\n","")
             if _Version_ != git_Request:
@@ -938,39 +941,17 @@ try:
 
         elif __Command__[0] == "checkfiles":
             try:
+                print("    ",end="")
                 files_operations.check()
-                print(f"  {green}Done.\n{end}")
+                print(f"  \n{green}    Done.\n{end}")
 
             except Exception as exc:
                 HandleError("critical", __Command__[0], exc, "Error while trying to check files.", "None")
-
-        elif __Command__[0] == "debg.exec":
-            try:
-                debset_VarName = RemoveStartSpaces(__Command__[1])
-
-            except:
-                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <command> not found.", "Type <command> argument.")
-                continue
-
-            try:
-                exec(f"{debset_VarName}")
-                print(f"  {green}Succesfully executed.{end}\n")
-
-            except Exception as exc:
-                print(f"  {red}Cannot execute.\n  Exception:{end} {exc}\n")
-
-        elif __Command__[0] == "debg.liveedit":
-            print(f"\n\n  {orange}To enter live editing debugger mode, exit instance.{end}\n\n")
-            os.system("pause")
-            os.system("py -i dash.py")
-
-        elif __Command__[0] == "ver":
-            print(f"  [ Version ]  =  {_Version_}\n")
-
+        
         else:
             ClearOneLine()
             print(f"[{_Mode_}] {UserConfig.Name} {red}{UserConfig.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
-
+    
 except Exception as e:
     try:
         import critical_mode
