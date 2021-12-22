@@ -36,9 +36,15 @@ Sepchar is character that will separate arguments. Deafult = `.`. You can test i
 
 ## Commands
 
-| Command    | Usage               | 
-|------------|---------------------|
-| `exit`     | Exit program.       |
+| Command        | Usage                   | 
+|----------------|-------------------------|
+| `exit`         | Exit program.           |
+| `restart`      | Restart program.        |
+| `cls`          | Clear screen.           |
+|------------------------------------------|
+| # Config                                 |
+| `mycfg`        | Display current config. |
+
 
 
 
