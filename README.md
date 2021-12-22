@@ -41,7 +41,7 @@ Sepchar is character that will separate arguments. Deafult = `.`. You can test i
 | `exit`         | Exit program.           |
 | `restart`      | Restart program.        |
 | `cls`          | Clear screen.           |
-|-----Config-----|                         |
+|     Config     |                         |
 | `mycfg`        | Display current config. |
 
 
