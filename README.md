@@ -17,7 +17,7 @@
 
 
 ## What is `sepchar`?
-Sepchar is character that will separate arguments. Deafult = `!`. Example: `var.add ! Age ! 21` 
+Sepchar is character that will separate arguments. Deafult = `,`. Example: `var.add , Age , 21` 
 
 
 ## Commands
