@@ -1,11 +1,10 @@
-_Version_ = 6
+_Version_ = 7
 
 try:
-
     # Import packages
     print("  [Info] Importing packages: ", end="")
     try:
-        import pyuac, sys, os, platform, getpass, socket, requests, getmac, pyperclip, configparser as cp, ctypes
+        import bcrypt, sys, os, platform, getpass, socket, requests, getmac, pyperclip, configparser as cp, ctypes
 
     except:
         print("Error : ",end="")
@@ -14,7 +13,7 @@ try:
         __import__("os").system("cls")
 
         try:
-            import pyuac, sys, os, platform, getpass, socket, requests, getmac, pyperclip, configparser as cp, ctypes
+            import bcrypt, sys, os, platform, getpass, socket, requests, getmac, pyperclip, configparser as cp, ctypes
             print("Repaired : ",end="")
         
         except:
@@ -53,11 +52,8 @@ try:
     RegistryCP = cp.ConfigParser()
     CommandsCP   = cp.ConfigParser()
 
-    Vars_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\vars.dash"
-    Config_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\config.dash"
     Registry_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\reg.dash"
     MainFolder_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\"
-    Commands_Path     = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\commands.dash"
     print("OK")
 
 
@@ -66,6 +62,20 @@ try:
     import files_operations
     files_operations.check()
     print("> : OK")
+
+
+    # Check root account
+    print("  [Info] Checking root account : ",end="")
+    import accounts
+    try:
+        accounts.UserInfo("root")
+    except:
+        accounts.setup_root()
+    try:
+        accounts.login("root", "bootup_test")
+    except:
+        accounts.setup_root()
+    print("OK")
 
 
     # Check if program is running on windows.
@@ -105,15 +115,32 @@ try:
         except AttributeError:
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
         return is_admin
+    def Restart():
+        DashPath = os.getcwd()+"\\dash.py"
+        try:
+            os.system(f"py {DashPath}")
+        except Exception as e:
+            print(f"Error: cannot rerun dash. {e}")
 
     # Configuration
-    def ReadUserConfig():
-        ConfigCP.read(Config_Path, encoding='utf-8')
+    def ReadUserAccount(name):
+        __UserAccountPath = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\users\\{name}\\"
+        ConfigCP.read(__UserAccountPath+"config.dash", encoding='utf-8')
         _SepChar = ConfigCP["customization"]["sepchar"]
+        _Name    = _Login_Name
         _Cursor = ConfigCP["customization"]["cursor"]
-        _Name = ConfigCP["customization"]["name"]
         _OsChar = ConfigCP["customization"]["oschar"]
-        return (_Name, _Cursor, _SepChar, _OsChar)
+
+        import accounts
+        _Permissions = accounts.UserInfo(_Login_Name)[1]
+        if _Permissions.replace(" ","").replace("\n","") == "u":
+            _Permissions = "user"
+        elif _Permissions.replace(" ","").replace("\n","") == "r":
+            _Permissions = "root"
+        else:
+            _Permissions = "user"
+       
+        return (_Name, _Cursor, _SepChar, _OsChar, _Permissions, __UserAccountPath)
     def TurnColors():
         global end, red, gray, green, orange, blue
         RegistryCP.read(Registry_Path, encoding='utf-8')
@@ -134,7 +161,7 @@ try:
         ListOfVariables = VarsCP.sections()
 
         if not UserInput.startswith(OsChar):
-            FormatInput_sep = ReadUserConfig()[2]
+            FormatInput_sep = ReadUserAccount(_Login_Name)[2]
             if FormatInput_sep == "_":
                 FormatInput_sep = " "
         
@@ -170,6 +197,11 @@ try:
             if char == " ":
                 listed.pop(i)
         
+        for i, char in enumerate(listed):
+            if i != 0:
+                if char == " ":
+                    listed.pop(-i)
+
         return ListToString(listed)
 
 
@@ -177,6 +209,39 @@ try:
     RegistryCP.read(Registry_Path)
     if RegistryCP["reg"]["showBootupInfo"] == "true":
         os.system("pause")
+
+
+    # Login 
+    while True:
+        os.system("cls")
+        print("  Login to your account.")
+        _Login_Name = input(f"  Name : ")
+        _Login_Password = getpass.getpass(f"  Password : ") 
+        try:
+            import accounts
+
+        except:
+            print(f"  {red}Critical error: Cannot import accounts module. Including autorepair system.{end}")
+            try:
+                import update_code
+                print("  [ ok ]    : Imported <update_code>.")
+                Restart()
+
+            except:
+                print("  [ error ] : <update_code> not found.")
+                print("  Cannot repair error automaticly. You have to repair it by yourself. (mod.acc._notfound_)")
+                exit()
+
+        _Login_Status = accounts.login(_Login_Name, _Login_Password)
+        
+        if _Login_Status == True:
+            print(f"  Welcome, {_Login_Name}")
+            break
+
+
+        else:
+            print(f"  {_Login_Status}")
+            os.system("pause")
 
 
     #  Main loop
@@ -253,32 +318,28 @@ try:
                 critical_mode.CriticalMode(_ErrorContent_[1])
                 exit()
 
+        # Set paths variables
+        Vars_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\users\\{_Login_Name}\\vars.dash"
+        Config_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\users\\{_Login_Name}\\config.dash"
+        Commands_Path  = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\users\\{_Login_Name}\\commands.dash"
+    
         # Read user config
-        VarsCP.read(Vars_Path, encoding='utf-8')
-        ConfigCP.read(Config_Path, encoding='utf-8')
-        RegistryCP.read(Registry_Path)
-        CommandsCP.read(Commands_Path, encoding='utf-8')
-        UserConfig_Read = ReadUserConfig()
+        UserAccount_Read = ReadUserAccount(_Login_Name)
+        __UserAccountPath = UserAccount_Read[-1]
 
-        class UserConfig:
-            Name = UserConfig_Read[0]
-            Cursor = UserConfig_Read[1]
-            Sepchar = UserConfig_Read[2]
-            OsChar    = UserConfig_Read[3]
+        VarsCP.read(__UserAccountPath+"vars.dash", encoding='utf-8')
+        ConfigCP.read(__UserAccountPath+"config.dash", encoding='utf-8')
+        CommandsCP.read(__UserAccountPath+"commands.dash", encoding='utf-8')
+        RegistryCP.read(Registry_Path)
 
         _CustomCommandsList_ = CommandsCP.sections()
 
-        # Set mode
-        if isAdmin() == True:
-            if RegistryCP["reg"]["modeasemote"] == "true":
-                _Mode_ = "🔧"
-            else:
-                _Mode_ = "root"            
-        else:
-            if RegistryCP["reg"]["modeasemote"] == "true":
-                _Mode_ = "👤"
-            else:
-                _Mode_ = "nrml"
+        class UserAccount:
+            Name = UserAccount_Read[0]
+            Cursor = UserAccount_Read[1]
+            Sepchar = UserAccount_Read[2]
+            OsChar   = UserAccount_Read[3]
+            Permissions = UserAccount_Read[4]
 
         # Colors
         end    =  "\033[0m"
@@ -289,22 +350,25 @@ try:
         orange =  "\033[1;33m"
         TurnColors()
 
-        # Main input
-        __Command__ = input(f"[{_Mode_}] {UserConfig.Name} {gray}{UserConfig.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}")
+        # Mode
+        _Mode_ = UserAccount.Permissions
+
+        # Main input     
+        __Command__ = input(f"[{_Mode_}] {UserAccount.Name} {gray}{UserAccount.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}")
         CommandContent = __Command__
         __Command__ = FormatInput(__Command__)
 
         # Good command
         ClearOneLine()
-        print(f"[{_Mode_}] {UserConfig.Name} {green}{UserConfig.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
+        print(f"[{_Mode_}] {UserAccount.Name} {green}{UserAccount.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
+        os.system(f"title {__Command__[0]}")
 
 
         if __Command__[0]   == "exit":
             exit()
 
         elif __Command__[0] == "restart":
-            os.system("py dash.py")
-            Cls()
+            Restart()
             exit()
 
         elif __Command__[0] == "cls":
@@ -312,55 +376,31 @@ try:
 
         elif __Command__[0] == "devtest":
             print("  •")
-            # for el in __Command__:
-            #     print(el)
-            
+
 
         # Settings
         elif __Command__[0] == "mycfg":
             try:
-                print(f"  Name      ==  \"{UserConfig.Name}\"")
-                print(f"  Cursor    ==  \"{UserConfig.Cursor}\"")
-                print(f"  Sepchar   ==  \"{UserConfig.Sepchar}\"")
-                print(f"  Oschar    ==  \"{UserConfig.OsChar}\"\n")
+                print(f"\n  Current configuration{gray}:{end} \n")
+                print(f"    Name    = {gray}\"{end}{UserAccount.Name}{gray}\"{end}")
+                print(f"    Cursor  = {gray}\"{end}{UserAccount.Cursor}{gray}\"{end}")
+                print(f"    Sepchar = {gray}\"{end}{UserAccount.Sepchar}{gray}\"{end}")
+                print(f"    Oschar  = {gray}\"{end}{UserAccount.OsChar}{gray}\"{end}\n")
 
             except Exception as exc:
                 HandleError("critical", __Command__[0], exc, "Cannot read user configuration", "None")
 
-        elif __Command__[0] == "set.name":
-            try:
-                setname_NewName = RemoveStartSpaces(__Command__[1])
-
-            except:
-                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new username")
-                continue
-
-            if setname_NewName.replace(" ", "") == "":
-                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new username")
-                continue
-
-            if RegistryCP["reg"]["checkArgLenght"] == "true":
-                if len(setname_NewName) > 31:
-                    HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <name> is too long.", "Your name cannot be longer than 30 characters. You can turn off this setting in registry.")
-                    continue
-
-            try:
-                ConfigCP["customization"]["name"] = setname_NewName
-                with open(Config_Path, "w", encoding='utf-8') as f:
-                    ConfigCP.write(f)
-
-            except Exception as exc:
-                HandleError("critical", __Command__[0], exc, "Cannot write to file.", "None")
-
         elif __Command__[0] == "set.cursor":
             try:
                 setcursor_NewCursor = RemoveStartSpaces(__Command__[1])
+                if setcursor_NewCursor == "dot":
+                    setcursor_NewCursor = "•"
             except:
-                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <cursor> not found.", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new cursor")
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <cursor> not found.", f"After command, type sepchar (current: \"{UserAccount.Sepchar}\") and your new cursor")
                 continue
 
             if setcursor_NewCursor.replace(" ", "") == "":
-                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <cursor> not found.", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new cursor")
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <cursor> not found.", f"After command, type sepchar (current: \"{UserAccount.Sepchar}\") and your new cursor")
                 continue
 
             if RegistryCP["reg"]["checkArgLenght"] == "true":
@@ -378,9 +418,9 @@ try:
 
         elif __Command__[0] == "set.sepchar":
             try:
-                setsepchar_NewChar = RemoveStartSpaces(__Command__[1])
+                setsepchar_NewChar = __Command__[1].replace(" ","")
             except:
-                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <sepchar> not found", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new sepchar")
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <sepchar> not found", f"After command, type sepchar (current: \"{UserAccount.Sepchar}\") and your new sepchar")
                 continue
 
             if RegistryCP["reg"]["checkArgLenght"] == "true":
@@ -403,7 +443,7 @@ try:
             try:
                 setoschar_Char = RemoveStartSpaces(__Command__[1])
             except:
-                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <setoschar> not found", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and your new setoschar")
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <setoschar> not found", f"After command, type sepchar (current: \"{UserAccount.Sepchar}\") and your new setoschar")
                 continue
             
             setoschar_Char = setoschar_Char.replace(" ", "")
@@ -439,7 +479,7 @@ try:
             try:
                 dnslkp_TargetIP = __Command__[1]
             except:
-                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <target> not found", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and target ip.")
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <target> not found", f"After command, type sepchar (current: \"{UserAccount.Sepchar}\") and target ip.")
                 continue
 
             dnslkp_TargetIP = dnslkp_TargetIP.replace(" ", "")
@@ -462,7 +502,7 @@ try:
             try:
                 revdnslkp_TargetIP = __Command__[1]
             except:
-                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <target> not found", f"After command, type sepchar (current: \"{UserConfig.Sepchar}\") and target ip.")
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <target> not found", f"After command, type sepchar (current: \"{UserAccount.Sepchar}\") and target ip.")
                 continue
 
             revdnslkp_TargetIP = revdnslkp_TargetIP.replace(" ", "")
@@ -507,9 +547,9 @@ try:
                 RegistryCP.read(Registry_Path)
                 RegistryEntries = RegistryCP.items("reg")
 
-                print("  ==== REGSHOW ====\n")
+                print("\n  ==== REGSHOW ====\n")
                 for i, entry in enumerate(RegistryEntries):
-                    print(f"  [{i+1}] |  {green+'T' if entry[1] == 'true' else red+'F'}{end} {entry[0]}")
+                    print(f"  [{i+1}] {gray}|{end} {green+'T' if entry[1] == 'true' else red+'F'}{end} {gray}|{end} {entry[0]}")
 
                 print("\n")
 
@@ -518,8 +558,12 @@ try:
 
         elif __Command__[0] == "dreg.edit":
 
+            if _Mode_ != "root":
+                HandleError("soft", __Command__[0], "PermissionsError", "Only [root] can edit registry.", "Execute command with root permisions.")
+                continue
+
             try:
-                dregedit_EntryName = RemoveStartSpaces(__Command__[1])
+                dregedit_EntryName = __Command__[1].replace(" ","")
             except:
                 HandleError("soft", __Command__[0], "MissingArgument", "Argument: <entry.name> not found.", "Type argument: <entry.name>")
                 continue
@@ -530,11 +574,29 @@ try:
             except:
                 HandleError("soft", __Command__[0], "MissingArgument", "Argument: <entry.value> not found.", "Type argument: <entry.value>")
                 continue
-
-            dregedit_StableEntriesList = RegistryCP.items("reg")
-            dregedit_ListOfEntries = [entry[0] for entry in dregedit_StableEntriesList]
             
             dregedit_EntryName = dregedit_EntryName.replace(" ", "")
+            dregedit_StableEntriesList = RegistryCP.items("reg")
+            dregedit_ListOfEntries = [entry[0] for entry in dregedit_StableEntriesList]
+            dregedit_EntriesIndexes = {}
+
+            for i, entry in enumerate(dregedit_ListOfEntries):
+                dregedit_EntriesIndexes[str(i+1)] = entry
+
+            # Check if putted entryname as index
+            try:
+                dregedit_EntryName = int(dregedit_EntryName)
+                if dregedit_EntryName not in range(1, len(dregedit_StableEntriesList)):
+                        HandleError("soft", __Command__[0], "EntryNameIndexError", "Given entry index is incorrect.", "Enter correct entry index or name.")
+                        continue
+
+                for num in range(1, len(dregedit_StableEntriesList)):
+                    if dregedit_EntryName == num:
+                        dregedit_EntryName = dregedit_StableEntriesList[num-1][0]
+                        break
+            except:
+                pass
+     
             if dregedit_EntryName not in dregedit_ListOfEntries:
                 HandleError("soft", __Command__[0], "EntryNotFound", "Argument: <entry.name> don't fit.", "Type correct argument: <entry.name>")
                 continue
@@ -566,13 +628,12 @@ try:
                 for i, entry in enumerate(dregcopy_StableEntriesList):
                     dregedit_OutputList.append("1" if entry[1] == 'true' else "0")
 
-                print(f"  {green}Your registry code:{end} {''.join(dregedit_OutputList)}", end="")
+                print(f"  {blue}Your registry code:{end} {orange}{''.join(dregedit_OutputList)}{end}", end="")
                 if RegistryCP["reg"]["copyoutput"] == "true":
                     pyperclip.copy(''.join(dregedit_OutputList))
                     print(f"  {gray}(copied.){end}")
 
-                print("\n")
-
+        
             except:
                 HandleError("critical", __Command__[0], "LoadingRegInfoError")
 
@@ -614,6 +675,11 @@ try:
                 HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
 
         elif __Command__[0] == "dreg.reset":
+
+            if _Mode_ != "root":
+                HandleError("soft", __Command__[0], "PermissionsError", "Only [root] can edit registry.", "Execute command with root permisions.")
+                continue
+
             
             print(f"  {orange}Warning: Registry will be set back to deafult. Do you really want to continue?{end}")
             dregreset_Confirmation = input('  "confirm" to continue:  ')
@@ -720,9 +786,10 @@ try:
                     convertcustom_ModeT_LinesList = []
                     convertcustom_ModeT_LinesCounter = 1
                     while True:
-                        convertcustom_ModeT_CurrentLine = input(f"{convertcustom_ModeT_LinesCounter}  ")
-                        if convertcustom_ModeT_CurrentLine == "<stop>":
+                        convertcustom_ModeT_CurrentLine = input(f"{gray}{convertcustom_ModeT_LinesCounter}{end}  ")
+                        if "<stop>" in convertcustom_ModeT_CurrentLine:
                             break
+
                         else:
                             convertcustom_ModeT_LinesList.append(convertcustom_ModeT_CurrentLine)
 
@@ -736,7 +803,7 @@ try:
                         print(f"  {gray}(copied.){end}\n")
 
                 except:
-                    print(f"  {red}Missing argument: <_code_>. [Place: 2]{end}\n")
+                    HandleError("soft", "MissingArgument", "Argument: <code> not fund.", "You have not entered path to code file.", "Enter <code> argument.")
                     continue
 
         elif __Command__[0] == "cstm.list":
@@ -758,8 +825,6 @@ try:
                 vars_ListOfVariables = VarsCP.sections()
                 for name in vars_ListOfVariables:
                     print(f"  {name} = \"{VarsCP[name]['value']}\"")
-
-                print("\n")
 
             except:
                 HandleError("critical", __Command__[0], "FileError", "Cannot output file content.", "None")
@@ -854,18 +919,192 @@ try:
 
         # Recovery
         elif __Command__[0] == "rcv.save":
+            import files_operations
             files_operations.copy_recovery()
-            print(f"{green}Done.{end}")
+            print(f"  {green}Done.{end}\n")
 
         elif __Command__[0] == "rcv.restore":
+            import files_operations
             files_operations.paste_recovery()
-            print(f"{green}Done.{end}")
+            print(f"  {green}Done.{end}\n")
+
+
+        # Accounts
+        elif __Command__[0] == "acc.create":
+            if UserAccount.Permissions != "root":
+                HandleError("soft", __Command__[0], "PermissionsError", "Only root can add/modify accounts.", "Repeat process as root.")
+                continue
+
+            try:
+                acc_create_Name = __Command__[1].replace(" ","")  
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Include <name> argument.")
+                continue
+
+            try:
+                acc_create_Password = RemoveStartSpaces(__Command__[2])
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <password> not found.", "Include <password> argument.")
+                continue
+
+            try:
+                import accounts
+            except:
+                HandleError("critical", __Command__[0], "ModuleNotFound", "Module: accounts not found.", "Use repair tool to downlaod file online.")
+                continue
+
+            try:
+                accounts.create(acc_create_Name, bcrypt.hashpw(bytes(acc_create_Password, 'utf-8'), bcrypt.gensalt()))
+            except Exception as e:
+                HandleError("soft", __Command__[0], "UnexceptedError", e, "None.")
+
+        elif __Command__[0] == "acc.delete":
+            if UserAccount.Permissions != "root":
+                HandleError("soft", __Command__[0], "PermissionsError", "Only root can add/modify accounts.", "Repeat process as root.")
+                continue
+
+            try:
+                acc_delete_Name = RemoveStartSpaces(__Command__[1])
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Include <name> argument.")
+                continue
+
+            if acc_delete_Name == "root":
+                HandleError("soft", __Command__[0], "PermissionsError", "You don't have permissions to delete [root] account.", "None.")
+                continue
+
+            import accounts
+            acc_delete_RootPassAccept = accounts.check_root_password()
+            if acc_delete_RootPassAccept == False:
+                HandleError("soft", __Command__[0], "PermissionsError", "Too much incorrect root passwords tries.", "Try again and write correct password.")
+                continue
+
+            try:
+                status = accounts.delete(acc_delete_Name)
+                if status == True:
+                    print(f"  {green}Succesfully removed account.{end}")
+                else:
+                    HandleError("soft", __Command__[0], "UnexceptedError", f"{status}", "None.")
+
+            except Exception as e:
+                HandleError("soft", __Command__[0], "UnexceptedError", f"Error: {e}.", "None.")
+
+        elif __Command__[0] == "acc.chngpasswd":
+            if UserAccount.Permissions != "root":
+                acc_changepwd_Name = UserAccount.Name.replace(" ","")
+
+            else:
+                try:
+                    acc_changepwd_Name = __Command__[1].replace(" ","")
+                except:
+                    HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Include <name> argument.")
+                    continue
+            
+            if UserAccount.Permissions != "root":
+                try:
+                    acc_changepwd_CurrPwd = __Command__[2]
+
+                except:
+                    HandleError("soft", __Command__[0], "MissingArgument", "Argument: <current_password> not found.", "Include <current_password> argument.")
+                    continue
+            else:
+                acc_changepwd_CurrPwd = "SKIPPED_BECOUSE_COMMAND_TYPED_BY_ROOT"
+
+            try:
+                if acc_changepwd_CurrPwd != "SKIPPED_BECOUSE_COMMAND_TYPED_BY_ROOT":
+                    acc_changepwd_NewPwd = RemoveStartSpaces(__Command__[3])
+                    
+                else:
+                    acc_changepwd_NewPwd = RemoveStartSpaces(__Command__[2])
+
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <new_password> not found.", "Include <new_password> argument.")
+                continue
+
+
+            try:
+                import accounts
+                status = accounts.change_pass(acc_changepwd_Name, acc_changepwd_CurrPwd, bcrypt.hashpw(bytes(acc_changepwd_NewPwd, 'utf-8'), bcrypt.gensalt()))
+                if status == True:
+                    print(f"  {green}Succesfully changed password.{end}\n")
+                else:
+                    HandleError("soft", __Command__[0], "UnexceptedError", status, "None.")
+            
+            except Exception as e:
+                print(e)
+                os.system("pause")
+                HandleError("critical", __Command__[0], "UnexceptedError", e, "None.")
+
+        elif __Command__[0] == "acc.logout":
+            Restart()
+
+        elif __Command__[0] == "acc.rename":
+            try:
+                acc_rename_CurrName = RemoveStartSpaces(__Command__[1])
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <current_name> not found.", "Include <current_name> argument.")
+                continue
+            
+            try:
+                acc_rename_NewName = RemoveStartSpaces(__Command__[2])
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <new_name> not found.", "Include <new_name> argument.")
+                continue
+
+            import accounts
+            status = accounts.rename(acc_rename_CurrName, acc_rename_NewName)
+            if status == True:
+                print(f"  {green}Done.\n{end}")
+            else:
+                print(f"  {red}{status}{end}")
+
+        elif __Command__[0] == "acc.chngmode":
+            if UserAccount.Permissions != "root":
+                HandleError("soft", __Command__[0], "PermissionsError", "Only root can add/modify accounts.", "Repeat process as root.")
+                continue
+
+            try:
+                acc_chngmode_Name = RemoveStartSpaces(__Command__[1])
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Include <name> argument.")
+                continue
+
+            try:
+                acc_chngmode_Mode = RemoveStartSpaces(__Command__[2]).lower().replace("root","r").replace("user","u")
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <mode> not found.", "Include <mode> argument.")
+                continue
+            
+            if acc_chngmode_Mode not in ("r","u"):
+                HandleError("soft", __Command__[0], "ArgumentError", "Argument: <mode> value is not excepted.", "Specify <mode> by: [root/r] or [user/u].")
+                continue
+
+            import accounts
+            accounts.change_mode(acc_chngmode_Name, acc_chngmode_Mode)
+            print(f"  {green}Done.{end}\n")
+
+        elif __Command__[0] == "acc.list":
+            import accounts
+            acc_list_Accounts = accounts.list_accounts()
+            acc_list_Users = acc_list_Accounts[0]
+            acc_list_Roots = acc_list_Accounts[1]
+
+            print("\n")
+            for root in acc_list_Roots:
+                if root == "root":
+                    print(f"  {gray}[r] {blue}|{end} {gray}root{end}")
+                else:
+                    print(f"  [r] {blue}|{end} {root}")
+            print("\n")
+            for user in acc_list_Users:
+                print(f"  [u] {blue}|{end} {user}")
+            print("\n")
 
 
         # Other
         elif __Command__[0] == "oscmd":
             ClearOneLine()
-            print(f"({_Mode_}) {UserConfig.Name} {blue}{UserConfig.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
+            print(f"({_Mode_}) {UserAccount.Name} {blue}{UserAccount.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
 
             try:
                 oscmd_Command = __Command__[1]
@@ -877,13 +1116,6 @@ try:
                 os.system(oscmd_Command)
             except Exception as exc:
                 print(f"  {red}Unexcpeted error: {exc}{end}")
-
-        elif __Command__[0] == "root":
-            # try:
-            #     pyuac.runAsAdmin()
-            # except:
-            #     print(f"  {red}Cannot run Dash with administrator permissions.{end}")
-            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
 
         elif __Command__[0] == "viewf":
             try:
@@ -948,15 +1180,34 @@ try:
             except Exception as exc:
                 HandleError("critical", __Command__[0], exc, "Error while trying to check files.", "None")
         
+        elif __Command__[0] == "help.commands":
+            try:
+                import files_operations
+                files_operations.help_commands()
+            except:
+                HandleError("soft", __Command__[0], "FileError", "Cannot display commands list.", "None")
+
+        elif __Command__[0] == "debg.exe":
+            if UserAccount.Permissions != "root":
+                HandleError("soft", __Command__[0], "PermissionsError", "Only root can use debugger.", "Repeat process as root.")
+                continue
+
+            try:
+                exec(RemoveStartSpaces(__Command__[1]))
+                print(f"  {green}Done.{end}\n")
+
+            except Exception as e:
+                print(f"  {red}Error:{end} {e}\n")  
+     
         else:
             ClearOneLine()
-            print(f"[{_Mode_}] {UserConfig.Name} {red}{UserConfig.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
-    
+            print(f"[{_Mode_}] {UserAccount.Name} {red}{UserAccount.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
+
+
 except Exception as e:
     try:
         import critical_mode
         critical_mode.CriticalMode("Unexcepted error. - "+str(e))
-        exit()
 
     except Exception as e:
         Cls()
@@ -972,8 +1223,7 @@ except Exception as e:
             print(f"(Error) - {e}")
 
 
-        print("  [*] Install libaries.  :  ",end="")
-       
+        print("  [*] Install libaries.  :  ",end="") 
         try:
             import install_libaries
             install_libaries.InstallRequiredPackages()
@@ -984,12 +1234,10 @@ except Exception as e:
         
 
         print("  [*] Download code files.  :  ",end="")
-
         try:
             import update_code
             print("(Done) - Done.")
         
         except Exception as e:
             print(f"(Error) - {e}")
-
 

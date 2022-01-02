@@ -2,7 +2,7 @@
 if __import__("platform").system() != "Windows":
     exit()
 
-Packages = ["pyuac", "requests", "getmac", "pyperclip", "configparser"]
+Packages = ["bcrypt", "requests", "getmac", "pyperclip", "configparser"]
 
 def Install(package_name):
     try:

@@ -12,11 +12,14 @@ except:
         exit()
 
 scriptRootURL = r"https://raw.githubusercontent.com/GentalYT/dash/main/"
-cfg = ["dash.py", "files_operations.py", "critical_mode.py", "install_libaries.py"]
+cfg = ["accounts.py", "dash.py", "files_operations.py", "critical_mode.py", "install_libaries.py"]
 
 for name in cfg:
-    with open(name, "w", encoding="utf-8") as f:
-        f.write(requests.get(scriptRootURL + name).text.replace("\n",""))
+    try:
+        with open(name, "w", encoding="utf-8") as f:
+            f.write(requests.get(scriptRootURL + name).text.replace("\n",""))
+    except Exception as e:
+        print(f"  Error: Cannot install file: {name}\nException: {e}")
 
 print("  Installed update.")
 import dash
