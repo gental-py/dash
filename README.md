@@ -4,7 +4,7 @@
 
 ## Author
 
-- [@gentalyt](https://www.github.com/gentalyt)
+- [@gentalyt](https://www.github.com/gental-py)
 
 
 ## Features
