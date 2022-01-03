@@ -20,7 +20,7 @@
 #### `Main folder` - `C:\Users\USERNAME\Appdata\Local\.dash\`
 #### `Users` - `C:\Users\USERNAME\Appdata\Local\.dash\users\`
 #### `Backup` - `C:\Users\USERNAME\Appdata\LocalLow\.dash_recovery\`
-#### `Modules` - `.\ (Same as dash.py)`
+#### `Modules` - `C:\Users\USERNAME\Appdata\Local\.dash\online\`
 
 
 ## What is `sepchar`?
