@@ -1,5 +1,5 @@
 # Dash Console.
-~ Small project to make terminal usage easier. Work's on Windows, but can be runned on other systems. 
+~ Small project to make terminal usage easier. Work's only on Windows.
 
 
 ## Author
@@ -14,6 +14,13 @@
 - Custom separator.
 - Easy and clear interface.
 - Lot of commands
+
+
+## Files localization:
+#### `Main folder` - `C:\Users\USERNAME\Appdata\Local\.dash\`
+#### `Users` - `C:\Users\USERNAME\Appdata\Local\.dash\users\`
+#### `Backup` - `C:\Users\USERNAME\Appdata\LocalLow\.dash_recovery\`
+#### `Modules` - `.\ (Same as dash.py)`
 
 
 ## What is `sepchar`?
@@ -77,16 +84,27 @@ Sepchar is character that will separate arguments. Deafult = `,`. Example: `var.
 | `checkfiles`                   | Check program files health.                |
 
 
+## Registry (dreg)
+| Index | Entry                          | Effect                                          | Deafult |
+|-------|--------------------------------|-------------------------------------------------|---------|
+|   1   | `loginNameAsNumber`            | Shows names and their index and ask for index.  |    F    |
+|   2   | `checkArgLenght`               | Checks arguments lenght.                        |    T    |
+|   3   | `spaceAfterCursor`             | Add's space after cursor. T/F: (> text) (>text) |    T    |
+|   4   | `enableColors`                 | Turn on colors. (Recomended for easier usage)   |    T    |
+|   5   | `copyOutput`                   | Automaticly copying some commands output.       |    F    |
+|   6   | `showBootupInfo`               | Requires to press any key after read boot logs. |    F    |
+|   7   | `enableCustomCommands`         | Enables custom commands.                        |    T    |
+|   8   | `advancedErrorOutput`          | Show more informations about errors. (Advanced) |    F    |
+|   9   | `autoUpdate`                   | Automaticly install updates when detected.      |    F    |
 
 
-## Files
-#### `Main folder` - `C:\Users\USERNAME\Appdata\Local\.dash\`
-Folder, where all other files are stored.
-#### `Config` - `C:\Users\USERNAME\Appdata\Local\.dash\config.dash`
-User configuration file.
-#### `Registry` - `C:\Users\USERNAME\Appdata\Local\.dash\reg.dash`
-Program configuration file.
-#### `Custom commands` - `C:\Users\USERNAME\Appdata\Local\.dash\commands.dash`
-Custom commands, that you can use in terminal.
+## Accounts
+Every account have own: custom commands, custom variables, config and `account` file.
 
+Account can have: `root` or `user` permissions.
+`Root`:
+Can do everything excepting editing `[root]` account. (Deafult account) 
 
+`User`:
+Have limited permissions. Cannot edit dregistry, manage other account. (Can change name and password for their own)
+Can manage their config and custom files.
