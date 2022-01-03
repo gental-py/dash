@@ -87,7 +87,6 @@ Sepchar is character that will separate arguments. Deafult = `,`. Example: `var.
 ## Registry (dreg)
 | Index | Entry                          | Effect                                          | Deafult |
 |-------|--------------------------------|-------------------------------------------------|---------|
-| :---: |  :---                          |  :---                                           |  :---:  |
 |   1   | `loginNameAsNumber`            | Shows names and their index and ask for index.  |    F    |
 |   2   | `checkArgLenght`               | Checks arguments lenght.                        |    T    |
 |   3   | `spaceAfterCursor`             | Add's space after cursor. T/F: (> text) (>text) |    T    |
