@@ -108,3 +108,6 @@ Can do everything excepting editing `[root]` account. (Deafult account)
 `User`:
 Have limited permissions. Cannot edit dregistry, manage other account. (Can change name and password for their own)
 Can manage their config and custom files.
+
+Passwords security:
+All passwords are encrypted and hashed using `bcrypt` module. Password cannot be decoded to string, but can be brute-forced.
