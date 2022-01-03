@@ -144,7 +144,7 @@ Step 4. - End process.
 1. You can close notepad now.
 2. Enter command name and arguments to execute command.
   
-`
+`random, 1, 10` - outputs random number between 1 and 10.
 
 
 
