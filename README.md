@@ -21,27 +21,27 @@ Sepchar is character that will separate arguments. Deafult = `,`. Example: `var.
 
 
 ## Commands
-| Command                        | Effect                                     | 
+| Command                        | Effect                                     |
 |--------------------------------|--------------------------------------------|
 |     **Basics**                 |                                            |
 | `exit`                         | Exit program.                              |
 | `restart`                      | Restart program.                           |
-| `cls`                          | Clear screen.                              | 
+| `cls`                          | Clear screen.                              |
 |     **Config**                 |                                            |
 | `mycfg`                        | Display current config.                    |
-| `set.name <name>`              | Set new name.                              |
 | `set.cursor <cursor>`          | Set new cursor.                            |
 | `set.sepchar <sepchar>`        | Set new sepchar.                           |
-| `set.oschar <oschar>`          | Set new system command prefix.             |    
+| `set.oschar <oschar>`          | Set new system command prefix.             |
 |     **Network**                |                                            |
 | `netinfo`                      | Display your network info.                 |
 | `dnslkp <target.addr>`         | Dns lookup an addres.                      |
 | `revdnslkp <target.ip>`        | Reversed DNS lookup. (ip->addr)            |
+| `ipgeoinfo <target.ip>`        | Returns ip geo location. (Country, city)   |
 |     **Dash Registry**          |                                            |
 | `dreg.show`                    | Show entries and values.                   |
 | `dreg.edit <entry> <value>`    | Change entry value. [true/false]           |
 | `dreg.copy`                    | Copy current registry code.                |
-| `dreg.paste <code>`            | Paste registry code.                       | 
+| `dreg.paste <code>`            | Paste registry code.                       |
 | `dreg.reset`                   | Reset registry.                            |
 |     **Custom Commands**        |                                            |
 | `<custom.name>`                | Execute custom command.                    |
@@ -57,11 +57,25 @@ Sepchar is character that will separate arguments. Deafult = `,`. Example: `var.
 |     **Recovery**               |                                            |
 | `rcv.save`                     | Save current user files image.             |
 | `rcv.restore`                  | Restore saved files.                       |
+|     **Accounts (as root)**     |                                            |
+| `acc.create <name> <pass>`     | Create account.                            |
+| `acc.delete <name>`            | Delete account.                            |
+| `acc.chngpasswd <name> <pass>` | Change an account password.                |
+| `acc.logout`                   | Brings you back to login screen.           |
+| `acc.rename <name> <newname>`  | Rename an account.                         |
+| `acc.chngmode <name> <mode>`   | Change an account mode. <root/user>        |
+| `acc.list`                     | Shows list of all accounts.                |
+|     **Accounts (as user)**     |                                            |
+| `acc.chngpasswd <pass> <new>`  | Change current account password.           |
+| `acc.logout`                   | Brings you back to login screen.           |
+| `acc.rename <newname>`         | Change current account name.               |
+| `acc.list`                     | Show list of all accounts.                 |
 |     **Other**                  |                                            |
 | `root`                         | Try to open Dash with root permisions.     |
-| `viewf <path>`                 | Display file with simple highlithing.      |                        
-| `checkver`				             | Shows local version and check for updates. |
+| `viewf <path>`                 | Display file with simple highlithing.      |
+| `checkver`                     | Shows local version and check for updates. |
 | `checkfiles`                   | Check program files health.                |
+
 
 
 
