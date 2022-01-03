@@ -111,3 +111,43 @@ Can manage their config and custom files.
 
 Passwords security:
 All passwords are encrypted and hashed using `bcrypt` module. Password cannot be decoded to string, but can be brute-forced.
+
+
+## Custom commands
+Custom commands are commands made by users. You can also create your own in python3. 
+
+### Tutorial:
+Let's create command, that will be generate random number.
+
+Step 1. - Create python code.
+```python
+# Command syntax:  random, <min>, <max>
+import random as r
+
+min = __Command__[1]  # first argument given in input
+max = __Command__[2]  # and second one.
+
+number = r.randint(min,max)
+print(f"  Your number is: {number}")
+```
+
+Step 2. - Convert command.
+1. Copy python file localization.
+2. In Dash, type command: `cstm.convert, file, <%path>`
+3. Command will output one-line code. (Copy command)
+
+Step 3. - Create custom command.
+1. Enter command: `cstm.add, random` (random is <name>)
+2. Than notepad will apear. Find `[random]` and change `value` to your code.
+  
+Step 4. - End process.
+1. You can close notepad now.
+2. Enter command name and arguments to execute command.
+  
+`
+
+
+
+
+
+
