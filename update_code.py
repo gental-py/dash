@@ -12,7 +12,7 @@ except:
         exit()
 
 scriptRootURL = r"https://raw.githubusercontent.com/GentalYT/dash/main/"
-cfg = ["accounts.py", "dash.py", "files_operations.py", "critical_mode.py", "install_libaries.py"]
+cfg = ["dget.py", "accounts.py", "dash.py", "files_operations.py", "critical_mode.py", "install_libaries.py"]
 
 for name in cfg:
     try:
