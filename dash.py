@@ -1,4 +1,4 @@
-_Version_ = 8
+_Version_ = 10
 
 try:
     # Import packages
@@ -52,6 +52,7 @@ try:
     RegistryCP = cp.ConfigParser()
     CommandsCP   = cp.ConfigParser()
 
+    Online_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\online\\"
     Registry_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\reg.dash"
     MainFolder_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\"
     print("OK")
@@ -213,10 +214,45 @@ try:
 
     # Login 
     while True:
+        # Choose name select mode
         os.system("cls")
-        print("  Login to your account.")
-        _Login_Name = input(f"  Name : ")
-        _Login_Password = getpass.getpass(f"  Password : ") 
+        print("  \n( login )\n")
+
+        if RegistryCP["reg"]["loginnameasnumber"] == "true":
+            # Get all accounts names
+            All_Names = os.listdir(f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\users\\")
+            for index, name in enumerate(All_Names):
+                print(f"  [{index+1}]  {name}")
+
+            login_LinesCounter = 0
+            while True:
+                _login_NameIndex = input("  Index > ")
+                login_LinesCounter+=1
+                try:
+                    _login_NameIndex = int(_login_NameIndex.replace(" ",""))
+                    if _login_NameIndex not in range(1, len(All_Names)+1):
+                        print(f"  Index : {_login_NameIndex} is out of range!")
+                        login_LinesCounter+=1
+                    else:
+                        break
+
+                except:
+                    print(f"  Index : {_login_NameIndex} is incorrect.")
+                    login_LinesCounter+=1
+
+            for index in range(1, len(All_Names)+1):
+                if _login_NameIndex == index:
+                    _Login_Name = All_Names[index-1]
+
+            for i in range((len(All_Names) + login_LinesCounter)):
+                ClearOneLine()
+
+            print(f"  > Name : {_Login_Name}")
+
+        else:
+            _Login_Name = input(f"  > Name : ")
+
+        _Login_Password = getpass.getpass(f"  > Password : ") 
         try:
             import accounts
 
@@ -224,7 +260,6 @@ try:
             print(f"  {red}Critical error: Cannot import accounts module. Including autorepair system.{end}")
             try:
                 import update_code
-                print("  [ ok ]    : Imported <update_code>.")
                 Restart()
 
             except:
@@ -332,7 +367,10 @@ try:
         CommandsCP.read(__UserAccountPath+"commands.dash", encoding='utf-8')
         RegistryCP.read(Registry_Path)
 
+        # Get custom commands and modules
+        import dget
         _CustomCommandsList_ = CommandsCP.sections()
+        _CustomModulesList_  = dget.LocalList()
 
         class UserAccount:
             Name = UserAccount_Read[0]
@@ -540,6 +578,48 @@ try:
             except:
                 HandleError("soft", __Command__[0], "FetchingInfoError", "Cannot load informations.", "None")
 
+        elif __Command__[0] == "req.get":
+            try:
+                req_get_ResponeType = __Command__[1].replace(" ","").lower()
+                if req_get_ResponeType.replace(" ","").lower() not in ("t","text","code","c"):
+                    HandleError("soft", __Command__[0], "ArgumentValueError", "Argument: <response_type> value is incorrect.", "Response type can be: [text/t] or [code/c]. Text returns all text that is on given site url, but code, returns responsed code.")
+                    continue
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <response_type> not found.", "Response type can be: [text/t] or [code/c]. Text returns all text that is on given site url, but code, returns responsed code.")
+                continue
+           
+            try:
+                req_get_URL = __Command__[2]
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <url> not found.", "Type <url> argument.")
+                continue
+
+            try:
+                req_get_CreateRequest = requests.get(req_get_URL)
+                if req_get_ResponeType in ("t","text"):
+                    print(req_get_CreateRequest.text)
+                    if RegistryCP["reg"]["copyoutput"] == "true":
+                        pyperclip.copy(req_get_CreateRequest.text)
+                        print(f"  {gray}(copied.){end}")
+                else:
+                    req_get_Color = ""
+
+                    if str(req_get_CreateRequest.status_code).startswith("2"):
+                        req_get_Color = green
+                    
+                    if str(req_get_CreateRequest.status_code).startswith("4") or str(req_get_CreateRequest.status_code).startswith("5"):
+                        req_get_Color = red
+
+                    print(f"  {req_get_Color}{req_get_CreateRequest.status_code}{end}")
+                    if RegistryCP["reg"]["copyoutput"] == "true":
+                        pyperclip.copy(req_get_CreateRequest.status_code)
+                        print(f"  {gray}(copied.){end}")
+                    print("\n")
+
+            except Exception as e:
+                HandleError("soft", __Command__[0], "UnexceptedError", e, "None.")
+                continue
+
 
         # Registry
         elif __Command__[0] == "dreg.show":
@@ -586,9 +666,9 @@ try:
             # Check if putted entryname as index
             try:
                 dregedit_EntryName = int(dregedit_EntryName)
-                if dregedit_EntryName not in range(1, len(dregedit_StableEntriesList)):
-                        HandleError("soft", __Command__[0], "EntryNameIndexError", "Given entry index is incorrect.", "Enter correct entry index or name.")
-                        continue
+                if dregedit_EntryName not in range(1, (len(dregedit_StableEntriesList)+1)):
+                    HandleError("soft", __Command__[0], "EntryNameIndexError", "Given entry index is incorrect.", "Enter correct entry index or name.")
+                    continue
 
                 for num in range(1, len(dregedit_StableEntriesList)):
                     if dregedit_EntryName == num:
@@ -717,6 +797,11 @@ try:
                 addcmd_Name = __Command__[1]
                 addcmd_Name = RemoveStartSpaces(addcmd_Name).lower()
 
+                if RegistryCP["reg"]["checkArgLenght"] == "true":
+                    if len(addcmd_Name) > 30:
+                        HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <name> cannot be longer than 30 characters.", "Type shorter name.")
+                        continue
+
             except:
                 HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Type argument: <name>.")
                 continue
@@ -724,6 +809,11 @@ try:
             if addcmd_Name.replace(" ","") == "":
                 HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <name> cannot be blank.", "Type longer argument: <name>.")
                 continue
+            
+            if addcmd_Name in _CustomModulesList_:
+                HandleError("soft", __Command__[0], "ArgumentError", "Given <name> is same as an module command.", "Choose other: <name>.")
+                continue
+
 
             CommandsCP[addcmd_Name] = {"value": "\"\"\" This is your command. Use <br> to make new line. To use arguments, type: '__Command__[x]' where x means place of argument. \"\"\""}
             
@@ -834,6 +924,11 @@ try:
                 varadd_Name = __Command__[1]
                 varadd_Name = RemoveStartSpaces(varadd_Name).lower()
                 
+                if RegistryCP["reg"]["checkArgLenght"] == "true":
+                    if len(varadd_Name) > 30:
+                        HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <name> cannot be longer than 30 characters.", "Type shorter name.")
+                        continue
+
             except:
                 HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Type <name> argument.")
                 continue  
@@ -953,6 +1048,11 @@ try:
                 HandleError("critical", __Command__[0], "ModuleNotFound", "Module: accounts not found.", "Use repair tool to downlaod file online.")
                 continue
 
+            if RegistryCP["reg"]["checkArgLenght"] == "true":
+                if len(acc_create_Name) > 40:
+                    HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <name> cannot be longer than 6 characters.", "Type shorter name.")
+                    continue
+
             try:
                 accounts.create(acc_create_Name, bcrypt.hashpw(bytes(acc_create_Password, 'utf-8'), bcrypt.gensalt()))
             except Exception as e:
@@ -1002,7 +1102,7 @@ try:
             
             if UserAccount.Permissions != "root":
                 try:
-                    acc_changepwd_CurrPwd = __Command__[2]
+                    acc_changepwd_CurrPwd = RemoveStartSpaces(__Command__[1])
 
                 except:
                     HandleError("soft", __Command__[0], "MissingArgument", "Argument: <current_password> not found.", "Include <current_password> argument.")
@@ -1012,7 +1112,7 @@ try:
 
             try:
                 if acc_changepwd_CurrPwd != "SKIPPED_BECOUSE_COMMAND_TYPED_BY_ROOT":
-                    acc_changepwd_NewPwd = RemoveStartSpaces(__Command__[3])
+                    acc_changepwd_NewPwd = RemoveStartSpaces(__Command__[2])
                     
                 else:
                     acc_changepwd_NewPwd = RemoveStartSpaces(__Command__[2])
@@ -1039,17 +1139,26 @@ try:
             Restart()
 
         elif __Command__[0] == "acc.rename":
-            try:
-                acc_rename_CurrName = RemoveStartSpaces(__Command__[1])
-            except:
-                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <current_name> not found.", "Include <current_name> argument.")
-                continue
+            if UserAccount.Permissions != "root":
+                acc_rename_CurrName = UserAccount.Name
+
+            else:
+                try:
+                    acc_rename_CurrName = RemoveStartSpaces(__Command__[1])
+                except:
+                    HandleError("soft", __Command__[0], "MissingArgument", "Argument: <current_name> not found.", "Include <current_name> argument.")
+                    continue
             
             try:
                 acc_rename_NewName = RemoveStartSpaces(__Command__[2])
             except:
                 HandleError("soft", __Command__[0], "MissingArgument", "Argument: <new_name> not found.", "Include <new_name> argument.")
                 continue
+
+            if RegistryCP["reg"]["checkArgLenght"] == "true":
+                if len(acc_rename_NewName) > 40:
+                    HandleError("soft", __Command__[0], "ArgumentLenghtError", "Argument: <name> cannot be longer than 6 characters.", "Type shorter name.")
+                    continue
 
             import accounts
             status = accounts.rename(acc_rename_CurrName, acc_rename_NewName)
@@ -1101,10 +1210,88 @@ try:
             print("\n")
 
 
+        # Dget
+        elif __Command__[0] in _CustomModulesList_:
+            try:
+                os.system(f"py {Online_Loc}{__Command__[0]}.py")
+            except Exception as e:
+                print(f"  {red}Cannot execute module.\n  Exception: {end}{e}")
+
+        elif __Command__[0] == "dget.info":
+            try:
+                dget_info_Name = __Command__[1]
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Include <name> argument.")
+                continue
+
+            import dget
+            dget_info = dget.Info(RemoveStartSpaces(dget_info_Name.lower().replace(".py","")))
+            
+            if dget_info == False:
+                print(f"  {red}Module not exists.{end}\n")
+            else:
+                print(f"  Name : {blue}{dget_info_Name}{end}\n  Desc : {blue}{dget_info}{end}\n")
+
+        elif __Command__[0] == "dget.onlinelist":
+            import dget
+            dget_onlinelist_Return = dget.GlobalList()
+            for module in dget_onlinelist_Return:
+                print(f"  {module}")
+            print("\n")
+
+        elif __Command__[0] == "dget.list":
+            import dget
+            dget_list_Return = dget.LocalList()
+            for module in dget_list_Return:
+                print(f"  {module}")
+            print("\n")
+
+        elif __Command__[0] == "dget.get":
+            
+            try:
+                dget_get_Name = __Command__[1]
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Include <name> argument.")
+                continue
+
+            import accounts
+            dget_get_RootPass = accounts.check_root_password()
+            if dget_get_RootPass == False:
+                HandleError("soft", __Command__[0], "PermissionsError", "Too much incorrect root passwords tries.", "Try again and write correct password.")
+                continue
+
+            import dget
+            dget_get_Status = dget.Install(RemoveStartSpaces(dget_get_Name.lower().replace(".py","")))
+            if dget_get_Status != True:
+                print(f"{red}{dget_get_Status}{end}")
+            else:
+                print(f"  {green}Done.{end}\n")
+
+        elif __Command__[0] == "dget.remove":
+            try:
+                dget_remove_Name = __Command__[1]
+            except:
+                HandleError("soft", __Command__[0], "MissingArgument", "Argument: <name> not found.", "Include <name> argument.")
+                continue
+            
+            import accounts
+            dget_rem_RootPass = accounts.check_root_password()
+            if dget_rem_RootPass == False:
+                HandleError("soft", __Command__[0], "PermissionsError", "Too much incorrect root passwords tries.", "Try again and write correct password.")
+                continue
+
+            import dget
+            dget_remove_Status = dget.Remove(RemoveStartSpaces(dget_remove_Name.lower().replace(".py","")))
+            if dget_remove_Status != True:
+                print(f"{red}{dget_remove_Status}{end}")
+            else:
+                print(f"  {green}Done.{end}\n")
+
+
         # Other
         elif __Command__[0] == "oscmd":
             ClearOneLine()
-            print(f"({_Mode_}) {UserAccount.Name} {blue}{UserAccount.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
+            print(f"({'admin' if isAdmin() else 'user'}) {UserAccount.Name} {blue}{UserAccount.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
 
             try:
                 oscmd_Command = __Command__[1]
@@ -1198,7 +1385,8 @@ try:
 
             except Exception as e:
                 print(f"  {red}Error:{end} {e}\n")  
-     
+
+
         else:
             ClearOneLine()
             print(f"[{_Mode_}] {UserAccount.Name} {red}{UserAccount.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")

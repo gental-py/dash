@@ -27,6 +27,7 @@ def check():
     CommandsCP   = cp.ConfigParser()
 
     Users_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\users\\"
+    Online_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\online\\"
     Registry_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\reg.dash"
     MainFolder_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\"
 
@@ -36,12 +37,12 @@ def check():
 
     # Main folder
     if not os.path.exists(MainFolder_Loc):
-        print("_mainfolder.notexisting_",end="")
+        print("_mainfolder/notexisting_",end="")
         os.mkdir(MainFolder_Loc)
 
     # Registry
     if not os.path.exists(Registry_Loc) or os.path.getsize(Registry_Loc) == 0:
-        print("_registry.notexisting_",end="")
+        print("_registry/notexisting_",end="")
         open(Registry_Loc, "a+").close()
         RegistryCP["reg"] = {"loginNameAsNumber": "false", "checkArgLenght": "true", "spaceAfterCursor": "true", "enableColors": "true", "copyOutput": "false", "showBootupInfo": "false", "enableCustomCommands": "true", "advancedErrorOutput": "false"}
         with open(Registry_Loc, "w") as file:
@@ -49,9 +50,13 @@ def check():
 
     # Users folder
     if not os.path.exists(Users_Loc):
-        print("_usersfolder.notexisting_",end="")
+        print("_usersfolder/notexisting_",end="")
         os.mkdir(Users_Loc)
 
+    # Online folder
+    if not os.path.exists(Online_Loc):
+        print("_online/notexisting_",end="")
+        os.mkdir(Online_Loc)
 
     # Check files health
 
@@ -339,27 +344,29 @@ def paste_recovery():
 
 def help_commands():
     print("""
-    | Command                        | Effect                                     | 
+
+    | Command                        | Effect                                     |
     |--------------------------------|--------------------------------------------|
     |     **Basics**                 |                                            |
     | `exit`                         | Exit program.                              |
     | `restart`                      | Restart program.                           |
-    | `cls`                          | Clear screen.                              | 
+    | `cls`                          | Clear screen.                              |
     |     **Config**                 |                                            |
     | `mycfg`                        | Display current config.                    |
-    | `set.name <name>`              | Set new name.                              |
     | `set.cursor <cursor>`          | Set new cursor.                            |
     | `set.sepchar <sepchar>`        | Set new sepchar.                           |
-    | `set.oschar <oschar>`          | Set new system command prefix.             |    
+    | `set.oschar <oschar>`          | Set new system command prefix.             |
     |     **Network**                |                                            |
     | `netinfo`                      | Display your network info.                 |
     | `dnslkp <target.addr>`         | Dns lookup an addres.                      |
     | `revdnslkp <target.ip>`        | Reversed DNS lookup. (ip->addr)            |
+    | `ipgeoinfo <target.ip>`        | Returns ip geo location. (Country, city)   |
+    | `req.get <response> <url>`     | Make request and return [code/text]        |
     |     **Dash Registry**          |                                            |
     | `dreg.show`                    | Show entries and values.                   |
     | `dreg.edit <entry> <value>`    | Change entry value. [true/false]           |
     | `dreg.copy`                    | Copy current registry code.                |
-    | `dreg.paste <code>`            | Paste registry code.                       | 
+    | `dreg.paste <code>`            | Paste registry code.                       |
     | `dreg.reset`                   | Reset registry.                            |
     |     **Custom Commands**        |                                            |
     | `<custom.name>`                | Execute custom command.                    |
@@ -375,10 +382,30 @@ def help_commands():
     |     **Recovery**               |                                            |
     | `rcv.save`                     | Save current user files image.             |
     | `rcv.restore`                  | Restore saved files.                       |
+    |     **Accounts (as root)**     |                                            |
+    | `acc.create <name> <pass>`     | Create account.                            |
+    | `acc.delete <name>`            | Delete account.                            |
+    | `acc.chngpasswd <name> <pass>` | Change an account password.                |
+    | `acc.logout`                   | Brings you back to login screen.           |
+    | `acc.rename <name> <newname>`  | Rename an account.                         |
+    | `acc.chngmode <name> <mode>`   | Change an account mode. <root/user>        |
+    | `acc.list`                     | Shows list of all accounts.                |
+    |     **Accounts (as user)**     |                                            |
+    | `acc.chngpasswd <pass> <new>`  | Change current account password.           |
+    | `acc.logout`                   | Brings you back to login screen.           |
+    | `acc.rename <newname>`         | Change current account name.               |
+    | `acc.list`                     | Show list of all accounts.                 |
+    |     **Packages**               |                                            |
+    | `dget.info <name>`             | Returns informations abaout package.       |
+    | `dget.onlinelist`              | Returns all available packages.            |
+    | `dget.list`                    | Show all installed packages.               |
+    | `dget.get <name>`              | Install package.                           |
+    | `dget.remove <name>`           | Remove package.                            |
     |     **Other**                  |                                            |
     | `root`                         | Try to open Dash with root permisions.     |
-    | `viewf <path>`                 | Display file with simple highlithing.      |                        
+    | `viewf <path>`                 | Display file with simple highlithing.      |
     | `checkver`                     | Shows local version and check for updates. |
     | `checkfiles`                   | Check program files health.                |
-            """)
+    | `debg.exe <command>`           | Execute command.                           |
+               """)
 
