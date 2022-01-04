@@ -44,6 +44,7 @@ Sepchar is character that will separate arguments. Deafult = `,`. Example: `var.
 | `dnslkp <target.addr>`         | Dns lookup an addres.                      |
 | `revdnslkp <target.ip>`        | Reversed DNS lookup. (ip->addr)            |
 | `ipgeoinfo <target.ip>`        | Returns ip geo location. (Country, city)   |
+| `req.get <response> <url>`     | Make request and return [code/text]        |
 |     **Dash Registry**          |                                            |
 | `dreg.show`                    | Show entries and values.                   |
 | `dreg.edit <entry> <value>`    | Change entry value. [true/false]           |
@@ -77,11 +78,18 @@ Sepchar is character that will separate arguments. Deafult = `,`. Example: `var.
 | `acc.logout`                   | Brings you back to login screen.           |
 | `acc.rename <newname>`         | Change current account name.               |
 | `acc.list`                     | Show list of all accounts.                 |
+|     **Packages**               |                                            |
+| `dget.info <name>`             | Returns informations abaout package.       |
+| `dget.onlinelist`              | Returns all available packages.            |
+| `dget.list`                    | Show all installed packages.               |
+| `dget.get <name>`              | Install package.                           |
+| `dget.remove <name>`           | Remove package.                            |
 |     **Other**                  |                                            |
 | `root`                         | Try to open Dash with root permisions.     |
 | `viewf <path>`                 | Display file with simple highlithing.      |
 | `checkver`                     | Shows local version and check for updates. |
 | `checkfiles`                   | Check program files health.                |
+| `debg.exe <command>`           | Execute command.                           |
 
 
 ## Registry (dreg)
@@ -147,7 +155,8 @@ Step 4. - End process.
 `random, 1, 10` - outputs random number between 1 and 10.
 
 
-
+## dget - Custom package manager.
+Packages are located in this github repo, in <online> folder. If you want to public your custom module, request me to do that.
 
 
 
