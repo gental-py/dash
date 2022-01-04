@@ -1,3 +1,5 @@
+#< Module to show informations aboaut your hardware. >#
+
 def ShowInfo(atrributes=[]):
     import requests as req
     import GPUtil
