@@ -1,6 +1,4 @@
-#< Module to show informations aboaut your hardware. >#
-
-def ShowInfo(atrributes=[]):
+def ShowInfo():
     import requests as req
     import GPUtil
     import shutil
@@ -81,28 +79,7 @@ def ShowInfo(atrributes=[]):
         ShowRam()
 
     # Handle attributes
-    AvaibleAttributes = ["-disks", "-net", "-cpu", "-gpu", "-ram"]
-    for i, attr in enumerate(atrributes):
-        attr = attr.replace(" ","").lower()
-        if attr not in AvaibleAttributes:
-            atrributes.pop(i)
-        else:
-            atrributes[i] = attr
-
-    if atrributes == []:
-        ShowAll()
-        
-    else:
-        for attr in atrributes:
-            if attr == "-disks":
-                ShowDisk()
-            if attr == "-net":
-                ShowNet()
-            if attr == "-cpu":
-                ShowCpu()
-            if attr == "-gpu":
-                ShowGpu()
-            if attr == "-ram":
-                ShowRam()
+   
+    ShowAll()
 
     print(end)
