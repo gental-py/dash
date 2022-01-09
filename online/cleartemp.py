@@ -1,4 +1,5 @@
-#< Module to clear temporary files. >#
+#< Module to clear temporary files. ># 
+
 
 import os, ctypes, time
 ppl = "\033[1;35m" # text
