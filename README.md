@@ -85,7 +85,6 @@ Sepchar is character that will separate arguments. Deafult = `,`. Example: `var.
 | `dget.get <name>`              | Install package.                           |
 | `dget.remove <name>`           | Remove package.                            |
 |     **Other**                  |                                            |
-| `root`                         | Try to open Dash with root permisions.     |
 | `viewf <path>`                 | Display file with simple highlithing.      |
 | `checkver`                     | Shows local version and check for updates. |
 | `checkfiles`                   | Check program files health.                |
