@@ -1,33 +1,82 @@
-_Version_ = 10
+_Version_ = 11
+_DashBootLogs_ = {
+    "[ BOOT ] Import packages : ": "None", 
+    "[ BOOT ] Fetch os username : ": "None", 
+    "[ BOOT ] Check for updates : ": "None", 
+    "[ BOOT ] Configparser configuration : ": "None", 
+    "[ BOOT ] Check files health   : ": "None", 
+    "[ BOOT ] Check root account  : ": "None", 
+    "[ BOOT ] Check platform  : ": "None", 
+    "[ BOOT ] Setup colors  : ": "None",
+    "[ BOOT ] Showing bootupinfo : ": "None"
+    }
 
 try:
     # Import packages
     print("  [Info] Importing packages: ", end="")
+
     try:
-        import bcrypt, sys, os, platform, getpass, socket, requests, getmac, pyperclip, configparser as cp, ctypes
+
+        import configparser as cp 
+        import datetime as dt
+        import pyperclip
+        import platform
+        import requests
+        import getpass
+        import socket
+        import bcrypt
+        import getmac
+        import ctypes
+        import time
+        import sys 
+        import os 
+        _DashBootLogs_["[ BOOT ] Import packages : "] = "Done"
 
     except:
-        print("Error : ",end="")
-        from install_libaries import InstallRequiredPackages
-        InstallRequiredPackages()
+
+        # Try to install missing libaries
+        print("Error : ", end = "")
+        _DashBootLogs_["[ BOOT ] Import packages : "] = "Error"
+        import install_libaries 
+        install_libaries.InstallRequiredPackages()
         __import__("os").system("cls")
 
         try:
-            import bcrypt, sys, os, platform, getpass, socket, requests, getmac, pyperclip, configparser as cp, ctypes
-            print("Repaired : ",end="")
+            # Retry to import packages
+            import configparser as cp 
+            import datetime as dt
+            import pyperclip
+            import platform
+            import requests
+            import getpass
+            import socket
+            import bcrypt
+            import getmac
+            import ctypes
+            import time
+            import sys 
+            import os 
+
+            print("Repaired : ", end = "")
+            _DashBootLogs_["[ BOOT ] Import packages : "] = "Error : Repaired : Done"
         
         except:
             print("Error")
+            _DashBootLogs_["[ BOOT ] Import packages : "] = "Error : Error"
             exit()
+
     print("OK")
+
 
 
     # System username
     _OsUsername_ = getpass.getuser()
-
+    _DashBootLogs_["[ BOOT ] Fetch os username : "] = "Done"
+        
 
     # Check for updates
-    print("  [Info] Checking version  : ",end="")
+    print("  [Info] Checking version  : ", end = "")
+
     detectedUpdate  = False
     git_VersionFile = "https://raw.githubusercontent.com/GentalYT/dash/main/version"
     git_Request     = requests.get(git_VersionFile).text.replace("\n", "")
@@ -37,12 +86,16 @@ try:
             git_Request = int(git_Request)  
 
         except:
-            print("VersionFile.NonIntValue",end="")
+            print("VersionFile.NonIntValue", end = "")
 
         if git_Request > _Version_:
             detectedUpdate = True  
             print("Detected Update!")
+
+
+    _DashBootLogs_["[ BOOT ] Check for updates : "] = "Done"
     print("OK")
+
 
 
     # Files
@@ -52,10 +105,14 @@ try:
     RegistryCP = cp.ConfigParser()
     CommandsCP   = cp.ConfigParser()
 
-    Online_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\online\\"
+    Online_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\online\\"
     Registry_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\reg.dash"
+    DashLogs_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\logs\\private.log"
+    UsersLogs_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\logs\\public.log"
     MainFolder_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\"
+    _DashBootLogs_["[ BOOT ] Configparser configuration : "] = "Done"
     print("OK")
+
 
 
     # Check files health
@@ -63,26 +120,35 @@ try:
     import files_operations
     files_operations.check()
     print("> : OK")
+    _DashBootLogs_["[ BOOT ] Check files health   : "] = "Done"
 
 
     # Check root account
     print("  [Info] Checking root account : ",end="")
     import accounts
+
     try:
         accounts.UserInfo("root")
     except:
         accounts.setup_root()
+
     try:
         accounts.login("root", "bootup_test")
     except:
         accounts.setup_root()
+
+
+    _DashBootLogs_["[ BOOT ] Check root account  : "] = "Done"
     print("OK")
+
 
 
     # Check if program is running on windows.
     print("  [Info] Checking platform : ",end="")
     if platform.system() != "Windows": print("  Hi user. Propably dash must run on Windows."), exit() 
+    _DashBootLogs_["[ BOOT ] Check platform  : "] = "Done"
     print("OK")
+
 
 
     # Colors
@@ -96,7 +162,9 @@ try:
             kernel32 = ctypes.windll.kernel32
             kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
             del kernel32
+    _DashBootLogs_["[ BOOT ] Setup colors  : "] = "Done"
     print("OK")
+
 
 
     # Functions
@@ -122,6 +190,22 @@ try:
             os.system(f"py {DashPath}")
         except Exception as e:
             print(f"Error: cannot rerun dash. {e}")
+    def CreatePublicLog(mode=None, user=None, type=None, command=None, arguments=[], info=None):        
+        CurrentMomentInfo = dt.datetime.today()
+        date = f"{CurrentMomentInfo.day}/{CurrentMomentInfo.month}/{CurrentMomentInfo.year}"
+        time = f"{CurrentMomentInfo.hour}:{CurrentMomentInfo.minute}"
+        
+        _ReadyString_ = f"( {date} ) - ( {time} )  ~  [ <{mode}> {user} ]  :  {{{type}}}  :  \"{command}\"  ~  {info}  // "
+        for arg in arguments:
+            _ReadyString_ += f" <{arg}> "
+
+
+        OpenFile_W = open(UsersLogs_Path, "a")
+        OpenFile_W.write(_ReadyString_+"\n")
+        OpenFile_W.close()   
+    def CreatePrivateLog(content):
+        with open(DashLogs_Path, "a") as f:
+            f.write(content+"\n")
 
     # Configuration
     def ReadUserAccount(name):
@@ -209,16 +293,27 @@ try:
     # showbootupinfo entry barrier
     RegistryCP.read(Registry_Path)
     if RegistryCP["reg"]["showBootupInfo"] == "true":
+        _DashBootLogs_["[ BOOT ] Showing bootupinfo : "] = "Done"
         os.system("pause")
+
+
+    # Write boot logs
+    CreatePrivateLog("  <------ NEW SESSION ------>  ")
+    for log in _DashBootLogs_:
+        CreatePrivateLog(log+_DashBootLogs_[log])
 
 
     # Login 
     while True:
+
+
         # Choose name select mode
         os.system("cls")
         print("  \n( login )\n")
 
         if RegistryCP["reg"]["loginnameasnumber"] == "true":
+            CreatePrivateLog("[ LOGIN ] Mode : asnumber")
+
             # Get all accounts names
             All_Names = os.listdir(f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\users\\")
             for index, name in enumerate(All_Names):
@@ -243,6 +338,7 @@ try:
             for index in range(1, len(All_Names)+1):
                 if _login_NameIndex == index:
                     _Login_Name = All_Names[index-1]
+                    CreatePrivateLog("[ LOGIN ] Recognized number index.")
 
             for i in range((len(All_Names) + login_LinesCounter)):
                 ClearOneLine()
@@ -250,6 +346,7 @@ try:
             print(f"  > Name : {_Login_Name}")
 
         else:
+            CreatePrivateLog("[ LOGIN ] Mode : text")
             _Login_Name = input(f"  > Name : ")
 
         _Login_Password = getpass.getpass(f"  > Password : ") 
@@ -265,17 +362,19 @@ try:
             except:
                 print("  [ error ] : <update_code> not found.")
                 print("  Cannot repair error automaticly. You have to repair it by yourself. (mod.acc._notfound_)")
+                CreatePrivateLog("[ LOGIN ] FATAL ERROR [0]")
                 exit()
 
         _Login_Status = accounts.login(_Login_Name, _Login_Password)
+        CreatePrivateLog("[ LOGIN ] Login request send.")
         
         if _Login_Status == True:
-            print(f"  Welcome, {_Login_Name}")
+            CreatePrivateLog(f"[ LOGIN ] Login succesfull. ({_Login_Name})")
             break
-
 
         else:
             print(f"  {_Login_Status}")
+            CreatePrivateLog("[ LOGIN ] Data not matching.")
             os.system("pause")
 
 
@@ -286,11 +385,19 @@ try:
         # If update detected
         if detectedUpdate == True:
             detectedUpdate = False
+            CreatePrivateLog(f"[ UPDATE ] Update detected. v={git_Request}")
             print(f"\n\n  Dash have detected update! [{git_Request}]")
 
             if RegistryCP["reg"]["autoupdate"] == "true":
+                CreatePrivateLog("[ UPDATE ] Automaticly installing update.")
                 print("  Autoupdate is true, installing update.")
-                import update_code
+                try:
+                    CreatePrivateLog("[ UPDATE ] Installing.")
+                    import update_code
+
+                except:
+                    print(f"  {red}FATAL ERROR : Cannot find <update_code> module.")
+                    CreatePrivateLog("[ UPDATE ] FATAL ERROR : <update_code> not found.")
                 exit()
 
             else:
@@ -299,7 +406,14 @@ try:
                     update_Ask = input("  [Y/n] >").replace(" ","").lower()
 
                 if update_Ask == "y":
-                    import update_code
+                    try:
+                        CreatePrivateLog("[ UPDATE ] Installing.")
+                        import update_code
+
+                    except:
+                        print(f"  {red}FATAL ERROR : Cannot find <update_code> module.")
+                        CreatePrivateLog("[ UPDATE ] FATAL ERROR : <update_code> not found.")
+
                     exit()
 
         def HandleError(type, command, name, description, solution):
@@ -325,6 +439,7 @@ try:
 
             else:
                 Cls()
+                CreatePrivateLog("[ ERROR HANDLER ] Unknown error type.")
                 print(f"    {red}ErrorHandler: Unknown error type {type.lower()}.{end}")
                 os.system("pause")
 
@@ -333,6 +448,7 @@ try:
 
 
             if _ErrorContent_[0] == False:
+                CreatePrivateLog(f"[ ERROR HANDLER ] Soft error : <{_ErrorContent_[4]}>.")
                 if _AdvancedOutputMode_ == False:
                     print(f"  {red}Error: {_ErrorContent_[4]}{end}")
                     print(f"  {orange}Solution: {_ErrorContent_[5]}{end}\n")
@@ -343,15 +459,12 @@ try:
                     print(f"   {red}• {orange}Info:  {end}{red}{_ErrorContent_[4]}{end}")
                     print(f"   {red}• {orange}Sltn:  {end}{blue}{_ErrorContent_[5]}{end}\n")
             else:
+                CreatePrivateLog(f"[ ERROR HANDLER ] Critical error: <{_ErrorContent_[1]}>.")
                 Cls()
-                print(f"  {orange}===={end}{red} CRITICAL ERROR {end}{orange}===={end}")
-                print(f"   {red}• {orange}Code:  {end}{red}<{_ErrorContent_[1]}>{end}")
-                print(f"   {red}• {orange}Info:  {end}{red}{_ErrorContent_[4]}{end}")
-                print(f"   {red}• {orange}Sltn:  {end}{blue}{_ErrorContent_[5]}{end}\n")
 
+                CreatePrivateLog("[ ERROR HANDLER ] Initializing critical mode.")
                 import critical_mode
                 critical_mode.CriticalMode(_ErrorContent_[1])
-                exit()
 
         # Set paths variables
         Vars_Path = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\users\\{_Login_Name}\\vars.dash"
@@ -402,10 +515,14 @@ try:
         os.system(f"title {__Command__[0]}")
 
 
+        #  < --  Commands  -- > #
+
         if __Command__[0]   == "exit":
+            CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
             exit()
 
         elif __Command__[0] == "restart":
+            CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
             Restart()
             exit()
 
@@ -413,11 +530,13 @@ try:
             Cls()
 
         elif __Command__[0] == "devtest":
+            CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
             print("  •")
 
 
         # Settings
         elif __Command__[0] == "mycfg":
+            CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
             try:
                 print(f"\n  Current configuration{gray}:{end} \n")
                 print(f"    Name    = {gray}\"{end}{UserAccount.Name}{gray}\"{end}")
@@ -429,6 +548,7 @@ try:
                 HandleError("critical", __Command__[0], exc, "Cannot read user configuration", "None")
 
         elif __Command__[0] == "set.cursor":
+            logs_CursorBefore = UserAccount.Cursor
             try:
                 setcursor_NewCursor = RemoveStartSpaces(__Command__[1])
                 if setcursor_NewCursor == "dot":
@@ -454,7 +574,10 @@ try:
                 HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
                 continue
 
+            CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Before=\"{logs_CursorBefore}\"")
+
         elif __Command__[0] == "set.sepchar":
+            logs_SepcharBefore = UserAccount.Sepchar
             try:
                 setsepchar_NewChar = __Command__[1].replace(" ","")
             except:
@@ -476,8 +599,10 @@ try:
                     ConfigCP.write(f)
             except:
                 HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
+            CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Before=\"{logs_SepcharBefore}\"")
 
         elif __Command__[0] == "set.oschar":
+            logs_OscharBefore = UserAccount.OsChar
             try:
                 setoschar_Char = RemoveStartSpaces(__Command__[1])
             except:
@@ -497,7 +622,7 @@ try:
                     ConfigCP.write(f)
             except:
                 HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
-
+            CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Before=\"{logs_OscharBefore}\"")
 
         # Network
         elif __Command__[0] == "netinfo":
@@ -509,8 +634,10 @@ try:
 
                 print(f" - IP:\n  Public  {green}>{end} {netinfo_PublicIP}\n  Private {green}>{end} {netinfo_PrivateIP}\n  Mac     {green}>{end} {netinfo_MacAddr}\n")
                 print(f" - NAME:\n  This pc {green}>{end} {netinfo_PcName}\n")
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Status=shown")
 
             except Exception as exc:
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "error", __Command__[0], __Command__, f"Status=error")
                 HandleError("soft", __Command__[0], "FetchingInfoError", f"Cannot load informations: <{exc}>", "None")
 
         elif __Command__[0] == "dnslkp":
@@ -532,8 +659,10 @@ try:
                     print(f"  {gray}(copied.){end}")
 
                 print("\n")
-            
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Status=shown")
+
             except:
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "error", __Command__[0], __Command__, f"Status=error")
                 HandleError("soft", __Command__[0], "FetchingInfoError", "Cannot load informations.", "None")
 
         elif __Command__[0] == "revdnslkp":
@@ -553,9 +682,12 @@ try:
                 if RegistryCP["reg"]["copyOutput"] == "true":
                     pyperclip.copy(revdnslkp_OutputIP[0])
                     print(f"  {gray}(copied.)\n{end}")
+                
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Status=shown")
             
             except:
                 HandleError("soft", __Command__[0], "FetchingInfoError", "Cannot load informations.", "None")
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "error", __Command__[0], __Command__, f"Status=error")
 
         elif __Command__[0] == "ipgeoinfo":
             try:
@@ -575,8 +707,11 @@ try:
                 print(f"  Country:  {ipinfo_JSON['country']}  [{ipinfo_JSON['countryCode']}]")
                 print(f"  City   :  {ipinfo_JSON['city']}  [{ipinfo_JSON['zip']}]\n")
 
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Status=shown")
+
             except:
                 HandleError("soft", __Command__[0], "FetchingInfoError", "Cannot load informations.", "None")
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "error", __Command__[0], __Command__, f"Status=error")
 
         elif __Command__[0] == "req.get":
             try:
@@ -616,10 +751,12 @@ try:
                         print(f"  {gray}(copied.){end}")
                     print("\n")
 
-            except Exception as e:
-                HandleError("soft", __Command__[0], "UnexceptedError", e, "None.")
-                continue
+                    CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Status=done")
 
+            except Exception as e:
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "error", __Command__[0], __Command__, f"Status=error <{e}>")
+                HandleError("soft", __Command__[0], "UnexceptedError", e, "None.")
+                
 
         # Registry
         elif __Command__[0] == "dreg.show":
@@ -632,15 +769,19 @@ try:
                     print(f"  [{i+1}] {gray}|{end} {green+'T' if entry[1] == 'true' else red+'F'}{end} {gray}|{end} {entry[0]}")
 
                 print("\n")
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
 
             except Exception as exc:
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "error", __Command__[0], __Command__, f"<{exc}>")
                 HandleError("critical", __Command__[0], "LoadingRegInfoError", f"Exception: {exc}", "None")
 
         elif __Command__[0] == "dreg.edit":
 
             if _Mode_ != "root":
-                HandleError("soft", __Command__[0], "PermissionsError", "Only [root] can edit registry.", "Execute command with root permisions.")
-                continue
+                import accounts
+                if accounts.check_root_password() == False:
+                    CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "warning", __Command__[0], __Command__, f"NON-ROOT user ({UserAccount.Name}) tried to edit local registry.")
+                    continue
 
             try:
                 dregedit_EntryName = __Command__[1].replace(" ","")
@@ -695,8 +836,10 @@ try:
                 RegistryCP["reg"][dregedit_EntryName] = dregedit_NewValue
                 with open(Registry_Path, "w") as f:
                     RegistryCP.write(f)
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
 
-            except:        
+            except:   
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "error", __Command__[0], __Command__)     
                 HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
 
         elif __Command__[0] == "dreg.copy":
@@ -713,11 +856,20 @@ try:
                     pyperclip.copy(''.join(dregedit_OutputList))
                     print(f"  {gray}(copied.){end}")
 
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
         
             except:
-                HandleError("critical", __Command__[0], "LoadingRegInfoError")
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "error", __Command__[0], __Command__)
+                HandleError("critical", __Command__[0], "LoadingRegInfoError", "Cannot load registry informations.", "Check files health.")
 
         elif __Command__[0] == "dreg.paste":
+
+            if _Mode_ != "root":
+                import accounts
+                if accounts.check_root_password() == False:
+                    CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "warning", __Command__[0], __Command__, f"NON-ROOT user ({UserAccount.Name}) tried to edit local registry.")
+                    continue
+
             try:
                 dregpaste_Code = __Command__[1]
                 dregpaste_Code = dregpaste_Code.replace(" ", "")
@@ -783,6 +935,8 @@ try:
             CommandsCP.read(Commands_Path, encoding='utf-8')
             try:
                 exec(CommandsCP[__Command__[0]]["value"].replace("<br>", "\n"))
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Executed custom command")
+
             except Exception as e:
                 print(f"  {red}Cannot execute command.{end}")
                 print(f"  {red}Exception:{end} {e}\n")
@@ -820,7 +974,10 @@ try:
             try:
                 with open(Commands_Path, "w", encoding='utf-8') as f:
                     CommandsCP.write(f)
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
+
             except:
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "error", __Command__[0], __Command__)
                 HandleError("critical", __Command__[0], "FileError", "Cannot write to file.", "None")
 
             os.system(f"notepad {Commands_Path}")
@@ -949,6 +1106,7 @@ try:
             VarsCP[varadd_Name] = {"value": varadd_Value}
             with open(Vars_Path, "w", encoding='utf-8') as f:
                 VarsCP.write(f)
+            CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"New variable: {varadd_Name} = {varadd_Value}")
 
         elif __Command__[0] == "var.rem":
             try:
@@ -973,11 +1131,13 @@ try:
                 VarsCP.remove_section(remvar_Name)    
                 with open(Vars_Path, "w", encoding='utf-8') as f:
                     VarsCP.write(f)
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Removed variable {remvar_Name}")
 
             except:
                 HandleError("critical", __Command__[0], "FileError", "Cannot delete variable.", "None")
 
         elif __Command__[0] == "var.set":
+            
             try:
                 varset_Name = __Command__[1]
                 varset_Name = RemoveStartSpaces(varset_Name).lower()
@@ -1004,9 +1164,11 @@ try:
                 continue
 
             try:
+                logs_VarSetBefore = VarsCP[varset_Name]["value"]
                 VarsCP[varset_Name]["value"] = varset_NewValue
                 with open(Vars_Path, "w", encoding='utf-8') as f:
                     VarsCP.write(f)
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"{logs_VarSetBefore} -> {varset_NewValue}")
 
             except:
                 HandleError("soft", __Command__[0], "ArgumentError", f"Varaible \"{remvar_Name}\" does not exists", "Type correct argument <name>.")
@@ -1016,11 +1178,13 @@ try:
         elif __Command__[0] == "rcv.save":
             import files_operations
             files_operations.copy_recovery()
+            CreatePrivateLog("[ RCV ] Created recovery point.")
             print(f"  {green}Done.{end}\n")
 
         elif __Command__[0] == "rcv.restore":
             import files_operations
             files_operations.paste_recovery()
+            CreatePrivateLog("[ RCV ] Restored recovery files set.")
             print(f"  {green}Done.{end}\n")
 
 
@@ -1055,6 +1219,7 @@ try:
 
             try:
                 accounts.create(acc_create_Name, bcrypt.hashpw(bytes(acc_create_Password, 'utf-8'), bcrypt.gensalt()))
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
             except Exception as e:
                 HandleError("soft", __Command__[0], "UnexceptedError", e, "None.")
 
@@ -1085,6 +1250,7 @@ try:
                     print(f"  {green}Succesfully removed account.{end}")
                 else:
                     HandleError("soft", __Command__[0], "UnexceptedError", f"{status}", "None.")
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
 
             except Exception as e:
                 HandleError("soft", __Command__[0], "UnexceptedError", f"Error: {e}.", "None.")
@@ -1129,7 +1295,8 @@ try:
                     print(f"  {green}Succesfully changed password.{end}\n")
                 else:
                     HandleError("soft", __Command__[0], "UnexceptedError", status, "None.")
-            
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__)
+
             except Exception as e:
                 print(e)
                 os.system("pause")
@@ -1164,6 +1331,7 @@ try:
             status = accounts.rename(acc_rename_CurrName, acc_rename_NewName)
             if status == True:
                 print(f"  {green}Done.\n{end}")
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"{acc_rename_CurrName} -> {acc_rename_NewName}")
             else:
                 print(f"  {red}{status}{end}")
 
@@ -1190,6 +1358,7 @@ try:
 
             import accounts
             accounts.change_mode(acc_chngmode_Name, acc_chngmode_Mode)
+            CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"user:{acc_chngmode_Name}, mode:{acc_chngmode_Mode}")
             print(f"  {green}Done.{end}\n")
 
         elif __Command__[0] == "acc.list":
@@ -1213,7 +1382,9 @@ try:
         # Dget
         elif __Command__[0] in _CustomModulesList_:
             try:
-                os.system(f"py {Online_Loc}{__Command__[0]}.py")
+                os.system(f"py {Online_Path}{__Command__[0]}.py")
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Executed add-on command")
+
             except Exception as e:
                 print(f"  {red}Cannot execute module.\n  Exception: {end}{e}")
 
@@ -1265,6 +1436,7 @@ try:
             if dget_get_Status != True:
                 print(f"{red}{dget_get_Status}{end}")
             else:
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "info", __Command__[0], __Command__, f"Installed libary: <{dget_get_Name}>")
                 print(f"  {green}Done.{end}\n")
 
         elif __Command__[0] == "dget.remove":
@@ -1285,6 +1457,7 @@ try:
             if dget_remove_Status != True:
                 print(f"{red}{dget_remove_Status}{end}")
             else:
+                CreatePublicLog(UserAccount.Permissions, UserAccount.Name, "warning", __Command__[0], __Command__, f"Removed libary: <{dget_remove_Name}>")
                 print(f"  {green}Done.{end}\n")
 
 
@@ -1386,7 +1559,6 @@ try:
             except Exception as e:
                 print(f"  {red}Error:{end} {e}\n")  
 
-
         else:
             ClearOneLine()
             print(f"[{_Mode_}] {UserAccount.Name} {red}{UserAccount.Cursor}{end}{' ' if RegistryCP['reg']['spaceAfterCursor'] == 'true' else ''}{CommandContent}")
@@ -1428,4 +1600,3 @@ except Exception as e:
         
         except Exception as e:
             print(f"(Error) - {e}")
-

@@ -5,7 +5,7 @@ import os, getpass
 # Set state variables
 _OsUsername_ = getpass.getuser()
 Online_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\online\\"
-Online_URL = "https://raw.githubusercontent.com/gental-py/dash/main/online/"
+Online_URL = "https://raw.githubusercontent.com/gental-py/dash/dget_db/online/"
 
 
 # Check if <online> exists
@@ -40,7 +40,7 @@ def Info(name):
 
 def GlobalList():
     try:
-        Request = req.get("https://raw.githubusercontent.com/gental-py/dash/main/online/list").text
+        Request = req.get(Online_URL + "list").text
     except Exception as e:
         return f"Error: {e}"
 
@@ -87,8 +87,13 @@ def Install(name):
             return f"  Server response code is not 200. ({request_Code})"
 
         print(f"  [*] Writing file.")
+
+        FileContent_Split = OnlineFileContent.split("\n")
         with open(Online_Loc+name+".py", "w+") as f:
-            f.write(OnlineFileContent)
+            for line in FileContent_Split:
+                if line != "\n":
+                    f.write(line+"\n")
+
         print(f"  [*] Online code writted to local file.")
         return True
 

@@ -26,6 +26,7 @@ def check():
     RegistryCP = cp.ConfigParser()
     CommandsCP   = cp.ConfigParser()
 
+    Logs_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\logs\\"
     Users_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\users\\"
     Online_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\online\\"
     Registry_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\reg.dash"
@@ -53,10 +54,37 @@ def check():
         print("_usersfolder/notexisting_",end="")
         os.mkdir(Users_Loc)
 
+    # Logs folder
+    if not os.path.exists(Logs_Loc):
+        print("_logsfolder/notexisting_")
+        os.mkdir(Logs_Loc)
+
+    # Logs private.log
+    if not os.path.exists(Logs_Loc+"private.log"):
+        print("_logsprivate/notexisting_")
+        open(Logs_Loc+"private.log", "a+")
+
+    # Logs public.log
+    if not os.path.exists(Logs_Loc+"public.log"):
+        print("_logspublic/notexisting_")
+        open(Logs_Loc+"public.log", "a+")
+
     # Online folder
     if not os.path.exists(Online_Loc):
         print("_online/notexisting_",end="")
         os.mkdir(Online_Loc)
+
+    # Online appdata folder
+    if not os.path.exists(Online_Loc+"data\\"):
+        print("_online.data/notexisting_",end="")
+        os.mkdir(Online_Loc+"data\\")
+
+    # Online appdata/cache folder
+    if not os.path.exists(Online_Loc+"data\\cache\\"):
+        print("_online.data.cache/notexisting_",end="")
+        os.mkdir(Online_Loc+"data\\cache\\")
+
+
 
     # Check files health
 
@@ -119,7 +147,6 @@ def check():
     # Get all accounts names
     AllAccountsNames = os.listdir(Users_Loc)
     
-
     for NAME in AllAccountsNames:
         # Configure loop for name
         Vars_Loc = f"C:\\Users\\{_OsUsername_}\\Appdata\\Local\\.dash\\users\\{NAME}\\vars.dash"
@@ -180,7 +207,6 @@ def check():
                     vars_open_Wp = open(Vars_Loc, "w+", encoding="utf-8")
                     vars_open_Wp.write(var_Content)
                     vars_open_Wp.close()   
-
         except:
             print(f"_{NAME}.regen/vars_ ",end="")
             RegenerateFile(Vars_Loc)
@@ -251,9 +277,7 @@ def check():
                 print(f"_{NAME}.config/dotinsepchar_",end="")
                 ConfigCP["customization"]["sepchar"] = "!"
                 with open(Config_Loc, "w") as f:
-                    ConfigCP.write(f)
-
-    
+                    ConfigCP.write(f)  
         except:
             print(f"_{NAME}.regen/config_",end="")
             RegenerateFile(Config_Loc)
@@ -261,6 +285,10 @@ def check():
             with open(Config_Loc, "w") as file:
                 ConfigCP.write(file)
 
+    try:
+        import install_libaries
+    except:
+        print("_installlibaries/notfound_")
 
     __Validation = True
             
