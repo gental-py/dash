@@ -1,3 +1,5 @@
+#< Display logs in realtime. >#
+
 import getpass, os
 
 def cls():
@@ -17,10 +19,13 @@ class Location:
 
 last_log = ""
 while True:
-    NewRead = read(Location.public)
+    try:
+        NewRead = read(Location.public)
 
-    if NewRead != last_log:
-        cls()
-        print(NewRead)
-        last_log = NewRead
-
+        if NewRead != last_log:
+            cls()
+            print(NewRead)
+            last_log = NewRead
+    except KeyboardInterrupt:
+        exit()
+        
